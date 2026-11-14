@@ -66,14 +66,16 @@ class _BaseTauronOutagesCalendar(CoordinatorEntity[TauronDataUpdateCoordinator],
 
     @property
     def event(self) -> CalendarEvent | None:
-        """Return the next upcoming outage as the current calendar event."""
-        next_outage = self._schedule.next(dt_util.utcnow())
-        return _event(next_outage) if next_outage else None
+        """Return the active outage, otherwise the next upcoming one."""
+        schedule = self._schedule
+        now = dt_util.utcnow()
+        outage = next(iter(schedule.active(now)), None) or schedule.next(now)
+        return _event(outage) if outage else None
 
     async def async_get_events(
         self, hass: HomeAssistant, start_date: datetime, end_date: datetime
     ) -> list[CalendarEvent]:
-        """Return outages overlapping the [start_date, end_date] range."""
+        """Return outages overlapping the [start_date, end_date) range."""
         return [_event(o) for o in self._schedule.overlapping(start_date, end_date)]
 
 

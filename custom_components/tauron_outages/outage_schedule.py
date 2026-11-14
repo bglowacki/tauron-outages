@@ -15,7 +15,6 @@ from typing import Any, Iterable, Mapping
 
 _LOGGER = logging.getLogger(__name__)
 
-# Key spellings Tauron (or older payloads) have used, in order of preference.
 _START_KEYS = ("startDate", "StartDate", "start_date")
 _END_KEYS = ("endDate", "EndDate", "end_date")
 _MESSAGE_KEYS = ("message", "Message", "reason", "description", "Description")
@@ -30,13 +29,13 @@ _FEED_ITEM_KEYS = ("OutageItems", "outageItems")
 class Outage:
     """A single interruption of power supply published by Tauron."""
 
-    start: datetime  # timezone-aware, UTC
-    end: datetime  # timezone-aware, UTC
+    start: datetime
+    end: datetime
     start_raw: str
     end_raw: str
     message: str | None
     type: Any = None
-    is_active_flag: Any = None  # Tauron's own flag; informational only
+    is_active_flag: Any = None
     outage_id: Any = None
     modified: Any = None
 
@@ -92,12 +91,6 @@ class OutageSchedule:
     def count(self) -> int:
         return len(self._outages)
 
-    def __len__(self) -> int:
-        return len(self._outages)
-
-    def __iter__(self):
-        return iter(self._outages)
-
     def active(self, now: datetime) -> tuple[Outage, ...]:
         return tuple(o for o in self._outages if o.is_active(now))
 
@@ -108,13 +101,12 @@ class OutageSchedule:
         return tuple(o for o in self._outages if o.start > now)
 
     def next(self, now: datetime) -> Outage | None:
-        upcoming = self.upcoming(now)
-        return upcoming[0] if upcoming else None
+        return next((o for o in self._outages if o.start > now), None)
 
     def overlapping(self, range_start: datetime, range_end: datetime) -> tuple[Outage, ...]:
-        """Outages sharing at least one instant with [range_start, range_end]."""
+        """Outages overlapping the half-open range [range_start, range_end)."""
         return tuple(
-            o for o in self._outages if not (o.end < range_start or o.start > range_end)
+            o for o in self._outages if o.end > range_start and o.start < range_end
         )
 
     def next_transition(self, now: datetime) -> datetime | None:

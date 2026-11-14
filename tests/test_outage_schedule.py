@@ -36,7 +36,6 @@ def recorded() -> OutageSchedule:
     return OutageSchedule.from_feed(json.loads(FIXTURE.read_text()), WARSAW)
 
 
-# --- module boundary -------------------------------------------------------
 
 
 def test_module_imports_nothing_from_homeassistant():
@@ -49,7 +48,6 @@ def test_module_imports_nothing_from_homeassistant():
     assert "homeassistant" not in MODULE.read_text()
 
 
-# --- feed shapes -----------------------------------------------------------
 
 
 def test_recorded_feed(recorded):
@@ -90,7 +88,6 @@ def test_non_dict_items_are_ignored():
     assert OutageSchedule.from_feed(feed, WARSAW).count == 1
 
 
-# --- key spellings ---------------------------------------------------------
 
 CANONICAL = {
     "startDate": "2026-11-17T06:00:00Z",
@@ -142,7 +139,6 @@ def test_missing_message_is_none():
     assert outage.message is None
 
 
-# --- timestamps ------------------------------------------------------------
 
 
 def test_z_timestamp_is_utc():
@@ -153,12 +149,10 @@ def test_z_timestamp_is_utc():
 
 
 def test_naive_timestamp_uses_given_time_zone():
-    # November: Warsaw is UTC+1
     outage = build(item("2026-11-17T07:00:00", "2026-11-17 15:00:00")).all()[0]
     assert outage.start == utc(2026, 11, 17, 6)
     assert outage.end == utc(2026, 11, 17, 14)
     assert outage.start.utcoffset() == timedelta(0)
-    # Same strings, different zone, different instant
     other = build(item("2026-11-17T07:00:00", "2026-11-17T15:00:00"), tz=UTC).all()[0]
     assert other.start == utc(2026, 11, 17, 7)
 
@@ -169,18 +163,16 @@ def test_explicit_offset_is_respected():
 
 
 def test_naive_timestamps_across_spring_dst_change():
-    # 2026-03-29 02:00 CET -> 03:00 CEST in Warsaw
     outage = build(item("2026-03-29T01:00:00", "2026-03-29T05:00:00")).all()[0]
-    assert outage.start == utc(2026, 3, 29, 0)  # +01:00
-    assert outage.end == utc(2026, 3, 29, 3)  # +02:00
+    assert outage.start == utc(2026, 3, 29, 0)
+    assert outage.end == utc(2026, 3, 29, 3)
     assert outage.end - outage.start == timedelta(hours=3)
 
 
 def test_naive_timestamps_across_autumn_dst_change():
-    # 2026-10-25 03:00 CEST -> 02:00 CET in Warsaw
     outage = build(item("2026-10-25T01:00:00", "2026-10-25T05:00:00")).all()[0]
-    assert outage.start == utc(2026, 10, 24, 23)  # +02:00
-    assert outage.end == utc(2026, 10, 25, 4)  # +01:00
+    assert outage.start == utc(2026, 10, 24, 23)
+    assert outage.end == utc(2026, 10, 25, 4)
     assert outage.end - outage.start == timedelta(hours=5)
 
 
@@ -204,7 +196,6 @@ def test_unparseable_item_is_dropped_with_warning(start, end, caplog):
     assert any("Dropping outage" in r.message for r in caplog.records)
 
 
-# --- time queries ----------------------------------------------------------
 
 START = utc(2026, 11, 17, 6)
 END = utc(2026, 11, 17, 14)
@@ -241,7 +232,6 @@ def test_tauron_active_flag_does_not_decide_activity():
 
 
 def test_overlapping_outages(recorded):
-    # 2026-11-19: 07-11 Ogrodnica and 07-15 Chwalimierz
     now = utc(2026, 11, 19, 10)
     assert len(recorded.active(now)) == 2
     now = utc(2026, 11, 19, 12)
@@ -252,7 +242,6 @@ def test_overlapping_outages(recorded):
 
 def test_next_is_earliest_upcoming(recorded):
     assert recorded.next(utc(2026, 11, 14)).start == utc(2026, 11, 17, 6)
-    # once the first outage has started, next moves on
     assert recorded.next(utc(2026, 11, 17, 6)).start == utc(2026, 11, 18, 6)
     assert recorded.next(utc(2026, 11, 21)) is None
 
@@ -265,7 +254,6 @@ def test_upcoming_counts(recorded):
 def test_next_transition_picks_earliest_boundary(recorded):
     assert recorded.next_transition(utc(2026, 11, 14)) == utc(2026, 11, 17, 6)
     assert recorded.next_transition(utc(2026, 11, 17, 6)) == utc(2026, 11, 17, 14)
-    # 19th: starts 07 (x2), ends 11 and 15
     assert recorded.next_transition(utc(2026, 11, 19, 7)) == utc(2026, 11, 19, 11)
     assert recorded.next_transition(utc(2026, 11, 19, 11)) == utc(2026, 11, 19, 15)
 
@@ -278,13 +266,16 @@ def test_next_transition_none_after_last(recorded):
 @pytest.mark.parametrize(
     "range_start,range_end,expected",
     [
-        (END, END + timedelta(hours=1), 1),  # touches the end
-        (START - timedelta(hours=1), START, 1),  # touches the start
-        (END + timedelta(seconds=1), END + timedelta(hours=1), 0),  # just after
-        (START - timedelta(hours=1), START - timedelta(seconds=1), 0),  # just before
-        (START + timedelta(hours=1), START + timedelta(hours=2), 1),  # inside
-        (START - timedelta(days=1), END + timedelta(days=1), 1),  # covers
+        (END, END + timedelta(hours=1), 0),
+        (START - timedelta(hours=1), START, 0),
+        (END - timedelta(seconds=1), END + timedelta(hours=1), 1),
+        (START - timedelta(hours=1), START + timedelta(seconds=1), 1),
+        (END + timedelta(seconds=1), END + timedelta(hours=1), 0),
+        (START - timedelta(hours=1), START - timedelta(seconds=1), 0),
+        (START + timedelta(hours=1), START + timedelta(hours=2), 1),
+        (START - timedelta(days=1), END + timedelta(days=1), 1),
     ],
+    ids=["touches-end", "touches-start", "overlaps-end", "overlaps-start", "after", "before", "inside", "covers"],
 )
 def test_overlapping_range_edges(single, range_start, range_end, expected):
     assert len(single.overlapping(range_start, range_end)) == expected
@@ -296,7 +287,6 @@ def test_overlapping_with_local_time_range(single):
     assert len(single.overlapping(local_start, local_end)) == 1
 
 
-# --- Locality --------------------------------------------------------------
 
 
 @pytest.mark.parametrize("locality", ["Ogrodnica", "ogrodnica", "OGRODNICA", "  Ogrodnica  ", "Ogrodnica,"])
@@ -337,13 +327,12 @@ def test_local_schedule_answers_time_questions(recorded):
     assert local.next_transition(utc(2026, 11, 19, 11)) == utc(2026, 11, 20, 8)
 
 
-# --- immutability and UIDs -------------------------------------------------
 
 
 def test_outages_are_immutable(recorded):
     outage = recorded.all()[0]
     with pytest.raises(dataclasses.FrozenInstanceError):
-        outage.message = "changed"  # type: ignore[misc]
+        outage.message = "changed"
     assert isinstance(recorded.all(), tuple)
 
 

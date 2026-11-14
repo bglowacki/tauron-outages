@@ -6,7 +6,7 @@ from typing import Any
 
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from homeassistant.util import dt as dt_util
@@ -53,7 +53,7 @@ def _item(outage: Outage) -> dict[str, Any]:
 class TauronSensor(CoordinatorEntity[TauronDataUpdateCoordinator], SensorEntity):
     """Representation of a Tauron power outage sensor.
 
-    Values are evaluated against the schedule at the moment HA reads them.
+    State is evaluated against the schedule at one instant on every write.
     """
 
     def __init__(
@@ -82,36 +82,33 @@ class TauronSensor(CoordinatorEntity[TauronDataUpdateCoordinator], SensorEntity)
             return None
         return data.filtered if self._filtered else data.schedule
 
-    @property
-    def native_value(self) -> Any:
-        """Return the state of the sensor."""
+    async def async_added_to_hass(self) -> None:
+        """Compute the initial state before the first write."""
+        self._evaluate()
+        await super().async_added_to_hass()
+
+    @callback
+    def _handle_coordinator_update(self) -> None:
+        """Re-evaluate on every poll and every outage start or end."""
+        self._evaluate()
+        self.async_write_ha_state()
+
+    def _evaluate(self) -> None:
         schedule = self._schedule
         if schedule is None:
-            return None
+            self._attr_native_value = None
+            self._attr_extra_state_attributes = {}
+            return
         now = dt_util.utcnow()
-
-        if self._kind == "outage_status":
-            return "Active" if schedule.is_active(now) else "Inactive"
-        if self._kind == "next_outage":
-            next_outage = schedule.next(now)
-            return next_outage.start if next_outage else None
-        if self._kind in ("outage_count", "outage_items"):
-            return schedule.count
-        return None
-
-    @property
-    def extra_state_attributes(self) -> dict[str, Any]:
-        """Return additional state attributes."""
-        schedule = self._schedule
-        if schedule is None:
-            return {}
-        now = dt_util.utcnow()
+        value: Any = None
         attributes: dict[str, Any] = {}
 
         if self._kind == "outage_status":
-            attributes["is_active"] = schedule.is_active(now)
-            attributes["total_outages"] = schedule.count
+            is_active = schedule.is_active(now)
             next_outage = schedule.next(now)
+            value = "Active" if is_active else "Inactive"
+            attributes["is_active"] = is_active
+            attributes["total_outages"] = schedule.count
             if next_outage:
                 attributes["next_outage_start"] = next_outage.start_raw
                 attributes["next_outage_end"] = next_outage.end_raw
@@ -120,20 +117,25 @@ class TauronSensor(CoordinatorEntity[TauronDataUpdateCoordinator], SensorEntity)
         elif self._kind == "next_outage":
             next_outage = schedule.next(now)
             if next_outage:
+                value = next_outage.start
                 attributes["end_time"] = next_outage.end_raw
                 attributes["reason"] = next_outage.message or UNKNOWN
                 attributes["type"] = next_outage.type if next_outage.type is not None else UNKNOWN
 
         elif self._kind == "outage_count":
+            value = schedule.count
             if schedule.count:
-                attributes["active_outages"] = len(schedule.active(now))
+                active = schedule.active(now)
+                attributes["active_outages"] = len(active)
                 attributes["upcoming_outages"] = len(schedule.upcoming(now))
-                attributes["is_active"] = schedule.is_active(now)
+                attributes["is_active"] = bool(active)
 
         elif self._kind == "outage_items":
+            value = schedule.count
             attributes["outages"] = [_item(o) for o in schedule.all()]
             attributes["total_outages"] = schedule.count
             attributes["has_active"] = schedule.is_active(now)
-            attributes["has_upcoming"] = bool(schedule.upcoming(now))
+            attributes["has_upcoming"] = schedule.next(now) is not None
 
-        return attributes
+        self._attr_native_value = value
+        self._attr_extra_state_attributes = attributes

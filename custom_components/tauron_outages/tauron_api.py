@@ -33,9 +33,7 @@ class TauronAPI:
     async def async_get_outages(self) -> Any:
         """Fetch the raw Outage feed (parsed JSON) for the configured address."""
         try:
-            # Generate dates for the next 7 days
             now = datetime.now(timezone.utc)
-            # Ensure Z suffix
             from_date = now.isoformat(timespec="milliseconds").replace("+00:00", "Z")
             to_date = (now + timedelta(days=7)).isoformat(timespec="milliseconds").replace("+00:00", "Z")
             
@@ -53,7 +51,6 @@ class TauronAPI:
             url = f"{BASE_URL}?{urllib.parse.urlencode(params)}"
             _LOGGER.debug("Requesting URL: %s", url)
             
-            # Run blocking HTTP call in a thread to avoid blocking the event loop
             def _fetch() -> Any:
                 req = urllib.request.Request(url)
                 with urllib.request.urlopen(req, timeout=TIMEOUT) as resp:

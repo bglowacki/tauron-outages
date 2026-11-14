@@ -5,7 +5,8 @@ from datetime import timedelta
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
-from homeassistant.core import HomeAssistant
+from homeassistant.core import CALLBACK_TYPE, HomeAssistant, callback
+from homeassistant.helpers.event import async_track_point_in_utc_time
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from homeassistant.util import dt as dt_util
 
@@ -22,14 +23,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Tauron Power Outages from a config entry."""
     hass.data.setdefault(DOMAIN, {})
 
-    # Create API client
     api = TauronAPI(
         city_gaid=entry.data["city_gaid"],
         street_gaid=entry.data["street_gaid"],
         house_no=entry.data["house_no"],
     )
 
-    # Determine update interval from options (hours) or default (minutes)
     hours_opt = None
     try:
         hours_opt = entry.options.get(CONF_UPDATE_INTERVAL_HOURS) if entry.options else None
@@ -37,7 +36,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         hours_opt = None
     update_minutes = (int(hours_opt) * 60) if hours_opt else UPDATE_INTERVAL
 
-    # Create data update coordinator
     coordinator = TauronDataUpdateCoordinator(
         hass,
         api,
@@ -51,22 +49,19 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     await coordinator.async_config_entry_first_refresh()
     _LOGGER.debug("First refresh completed for entry_id=%s", entry.entry_id)
 
-    # Store coordinator
     hass.data[DOMAIN][entry.entry_id] = coordinator
+    entry.async_on_unload(coordinator.async_start_transition_timer())
 
-    # Listen for options updates to apply filters without full reload
     async def _update_listener(hass: HomeAssistant, updated_entry: ConfigEntry) -> None:
         coord: TauronDataUpdateCoordinator = hass.data[DOMAIN][updated_entry.entry_id]
         new_filters = {
             "filter_type": (updated_entry.options.get("filter_type") if updated_entry.options else None) or updated_entry.data.get("filter_type"),
             "filter_message": (updated_entry.options.get("filter_message") if updated_entry.options else None) or updated_entry.data.get("filter_message"),
         }
-        # Apply filters if changed
         if getattr(coord, "_filters", None) != new_filters:
             _LOGGER.debug("Applying updated filters for entry_id=%s: %s", updated_entry.entry_id, new_filters)
-            coord._filters = new_filters  # internal, acceptable within integration scope
+            coord._filters = new_filters
             await coord.async_request_refresh()
-        # Apply update interval change if provided
         try:
             hours_opt = updated_entry.options.get(CONF_UPDATE_INTERVAL_HOURS) if updated_entry.options else None
         except Exception:
@@ -84,12 +79,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     entry.async_on_unload(entry.add_update_listener(_update_listener))
 
-    # Set up platforms
     _LOGGER.debug("Forwarding platforms %s for entry_id=%s", PLATFORMS, entry.entry_id)
     try:
         await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     except AttributeError:
-        # Backward compatibility
         for platform in PLATFORMS:
             _LOGGER.debug("Forwarding platform %s for entry_id=%s", platform, entry.entry_id)
             await hass.config_entries.async_forward_entry_setup(entry, platform)
@@ -112,13 +105,49 @@ class TauronDataUpdateCoordinator(DataUpdateCoordinator):
         """Initialize."""
         self.api = api
         self._filters = filters or {}
-        
+        self._unsub_transition: CALLBACK_TYPE | None = None
+
         super().__init__(
             hass,
             _LOGGER,
             name=DOMAIN,
             update_interval=timedelta(minutes=update_minutes),
         )
+
+    @callback
+    def async_start_transition_timer(self) -> CALLBACK_TYPE:
+        """Notify listeners at every outage start and end; returns the stop callback."""
+        remove_listener = self.async_add_listener(self._arm_transition)
+        self._arm_transition()
+
+        @callback
+        def stop() -> None:
+            remove_listener()
+            self._cancel_transition()
+
+        return stop
+
+    @callback
+    def _arm_transition(self) -> None:
+        self._cancel_transition()
+        if not self.data:
+            return
+        when = self.data.schedule.next_transition(dt_util.utcnow())
+        if when is not None:
+            self._unsub_transition = async_track_point_in_utc_time(
+                self.hass, self._on_transition, when
+            )
+
+    @callback
+    def _cancel_transition(self) -> None:
+        if self._unsub_transition is not None:
+            self._unsub_transition()
+            self._unsub_transition = None
+
+    @callback
+    def _on_transition(self, _now) -> None:
+        self._unsub_transition = None
+        self.async_update_listeners()
 
     async def _async_update_data(self) -> "TauronData":
         """Fetch the Outage feed and build the schedules entities read from."""
@@ -128,8 +157,6 @@ class TauronDataUpdateCoordinator(DataUpdateCoordinator):
             raise UpdateFailed(f"Error communicating with API: {err}") from err
 
         schedule = OutageSchedule.from_feed(feed, dt_util.get_default_time_zone())
-        # Transitional until the type filter is removed: filtered view is the
-        # Local outages for filter_message, further narrowed by type.
         filtered = schedule.local(self._filters.get("filter_message")).of_type(
             self._filters.get("filter_type")
         )
