@@ -10,17 +10,17 @@ from zoneinfo import ZoneInfo
 
 import pytest
 
-from tauron_outages.outage_feed import OutageFeed, OutageFeedError
+from tauron_outages.outage_feed_source import OutageFeedSource, OutageFeedError
 
 from conftest import ADDRESS, FIXTURE, FixtureTransport
 
 UTC = timezone.utc
 WARSAW = ZoneInfo("Europe/Warsaw")
-MODULE = Path(__file__).parents[1] / "custom_components" / "tauron_outages" / "outage_feed.py"
+MODULE = Path(__file__).parents[1] / "custom_components" / "tauron_outages" / "outage_feed_source.py"
 
 
 def fetch(transport: FixtureTransport, now: datetime, tz=WARSAW):
-    return asyncio.run(OutageFeed(ADDRESS, transport, tz).fetch(now))
+    return asyncio.run(OutageFeedSource(ADDRESS, transport, tz).fetch(now))
 
 
 def test_recorded_payload_becomes_the_outage_schedule():
@@ -108,7 +108,7 @@ def test_module_imports_nothing_from_homeassistant():
         "pkg = types.ModuleType('tauron_outages');"
         f"pkg.__path__ = [{str(MODULE.parent)!r}];"
         "sys.modules['tauron_outages'] = pkg;"
-        "import tauron_outages.outage_feed;"
+        "import tauron_outages.outage_feed_source;"
         "print(any(k.split('.')[0] == 'homeassistant' for k in sys.modules))"
     )
     out = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True, check=True)

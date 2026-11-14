@@ -21,7 +21,7 @@ from .const import (
 )
 from .migration import migrate_v1_to_v2
 from .http_transport import urllib_transport
-from .outage_feed import Address, OutageFeed, OutageFeedError
+from .outage_feed_source import Address, OutageFeedSource, OutageFeedError
 from .outage_schedule import OutageSchedule
 
 _LOGGER = logging.getLogger(__name__)
@@ -34,7 +34,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     locality, update_minutes = _options_of(entry)
     coordinator = TauronDataUpdateCoordinator(
-        hass, entry, outage_feed_for(entry.data), update_minutes=update_minutes, locality=locality
+        hass, entry, outage_feed_source_for(entry.data), update_minutes=update_minutes, locality=locality
     )
     await coordinator.async_config_entry_first_refresh()
 
@@ -53,13 +53,13 @@ async def _async_options_updated(hass: HomeAssistant, entry: ConfigEntry) -> Non
     coordinator.async_apply_options(locality=locality, update_minutes=update_minutes)
 
 
-def outage_feed_for(data: Mapping[str, Any]) -> OutageFeed:
+def outage_feed_source_for(data: Mapping[str, Any]) -> OutageFeedSource:
     address = Address(
         city_gaid=data[CONF_CITY_GAID],
         street_gaid=data[CONF_STREET_GAID],
         house_no=data[CONF_HOUSE_NO],
     )
-    return OutageFeed(address, urllib_transport(), dt_util.get_default_time_zone())
+    return OutageFeedSource(address, urllib_transport(), dt_util.get_default_time_zone())
 
 
 def _options_of(entry: ConfigEntry) -> tuple[str, int]:
@@ -93,12 +93,12 @@ class TauronDataUpdateCoordinator(DataUpdateCoordinator[OutageSchedule]):
         self,
         hass: HomeAssistant,
         entry: ConfigEntry | None,
-        feed: OutageFeed,
+        source: OutageFeedSource,
         *,
         update_minutes: int,
         locality: str = "",
     ) -> None:
-        self.feed = feed
+        self.source = source
         self._locality = locality
         self._feed_schedule: OutageSchedule | None = None
         self._unsub_transition: CALLBACK_TYPE | None = None
@@ -159,7 +159,7 @@ class TauronDataUpdateCoordinator(DataUpdateCoordinator[OutageSchedule]):
 
     async def _async_update_data(self) -> OutageSchedule:
         try:
-            self._feed_schedule = await self.feed.fetch(dt_util.utcnow())
+            self._feed_schedule = await self.source.fetch(dt_util.utcnow())
         except OutageFeedError as err:
             raise UpdateFailed(f"Error communicating with API: {err}") from err
 

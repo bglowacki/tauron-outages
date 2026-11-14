@@ -9,7 +9,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import pytest
 
 from tauron_outages.http_transport import BASE_URL, urllib_transport
-from tauron_outages.outage_feed import OutageFeed, OutageFeedError
+from tauron_outages.outage_feed_source import OutageFeedSource, OutageFeedError
 
 from conftest import ADDRESS
 
@@ -55,7 +55,7 @@ def call(server, timeout=5):
 
 
 def fetch_through_feed(url, timeout=5):
-    feed = OutageFeed(ADDRESS, urllib_transport(url, timeout=timeout), timezone.utc)
+    feed = OutageFeedSource(ADDRESS, urllib_transport(url, timeout=timeout), timezone.utc)
     return asyncio.run(feed.fetch(datetime(2026, 11, 14, tzinfo=timezone.utc)))
 
 

@@ -5,7 +5,7 @@ import urllib.parse
 import urllib.request
 from typing import Any
 
-from .outage_feed import Transport
+from .outage_feed_source import Transport
 
 _LOGGER = logging.getLogger(__name__)
 

@@ -13,7 +13,7 @@ from homeassistant.util import dt as dt_util
 
 import tauron_outages
 from tauron_outages import TauronDataUpdateCoordinator
-from tauron_outages.outage_feed import Address, OutageFeed
+from tauron_outages.outage_feed_source import Address, OutageFeedSource
 
 UTC = timezone.utc
 ADDRESS = Address(city_gaid="111", street_gaid="222", house_no="12A")
@@ -64,9 +64,9 @@ def run(scenario, feed=None, locality=None):
     async def main():
         hass = HomeAssistant(str(Path(__file__).parent))
         transport = FixtureTransport(json.loads(FIXTURE.read_text()) if feed is None else feed)
-        outage_feed = OutageFeed(ADDRESS, transport, dt_util.get_default_time_zone())
+        source = OutageFeedSource(ADDRESS, transport, dt_util.get_default_time_zone())
         coordinator = TauronDataUpdateCoordinator(
-            hass, None, outage_feed, update_minutes=60 * 168, locality=locality
+            hass, None, source, update_minutes=60 * 168, locality=locality
         )
         await coordinator.async_refresh()
         try:

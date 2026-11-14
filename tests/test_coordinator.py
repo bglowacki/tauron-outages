@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import timedelta
 
 from conftest import run, utc
-from tauron_outages.outage_feed import OutageFeedError
+from tauron_outages.outage_feed_source import OutageFeedError
 
 
 def test_arms_one_timer_at_next_boundary(clock):

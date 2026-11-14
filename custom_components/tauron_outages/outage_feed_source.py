@@ -23,7 +23,7 @@ class Address:
     house_no: str
 
 
-class OutageFeed:
+class OutageFeedSource:
 
     def __init__(self, address: Address, transport: Transport, local_tz: tzinfo) -> None:
         self._address = address
