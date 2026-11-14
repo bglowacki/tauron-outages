@@ -15,7 +15,7 @@ mise install          # Install Python + uv via mise
 uv sync               # Install dependencies
 ```
 
-Tests (pure Python, no HA needed): `uv run pytest`. They cover `outage_schedule.py` only, using `tests/fixtures/`.
+Tests: `uv run pytest`. They cover `outage_schedule.py` (pure Python) and the coordinator's transition timer (real HA core, fake API and clock), using `tests/fixtures/`.
 
 This runs inside Home Assistant — copy `custom_components/tauron_outages/` into HA's `custom_components/` directory.
 
@@ -38,7 +38,7 @@ All source lives in `custom_components/tauron_outages/`.
 
 ## Key Conventions
 
-- Python 3.13+, async/await throughout
+- Python 3.14+ (HA 2026.11+), async/await throughout
 - Translations in `translations/` (en + pl)
 - Integration metadata in `manifest.json` (domain: `tauron_outages`, iot_class: `cloud_polling`)
 - No YAML configuration — config flow only

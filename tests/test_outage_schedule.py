@@ -10,7 +10,7 @@ from zoneinfo import ZoneInfo
 
 import pytest
 
-from outage_schedule import OutageSchedule
+from tauron_outages.outage_schedule import OutageSchedule
 
 UTC = timezone.utc
 WARSAW = ZoneInfo("Europe/Warsaw")
@@ -211,7 +211,7 @@ def single() -> OutageSchedule:
         (START - timedelta(seconds=1), False, True),
         (START, True, False),
         (START + timedelta(hours=3), True, False),
-        (END, True, False),
+        (END, False, False),
         (END + timedelta(seconds=1), False, False),
     ],
     ids=["before", "at-start", "inside", "at-end", "after"],

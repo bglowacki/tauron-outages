@@ -36,6 +36,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     coordinator = TauronDataUpdateCoordinator(
         hass,
+        entry,
         api,
         update_minutes=update_minutes,
         filters={
@@ -78,12 +79,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     entry.async_on_unload(entry.add_update_listener(_update_listener))
 
     _LOGGER.debug("Forwarding platforms %s for entry_id=%s", PLATFORMS, entry.entry_id)
-    try:
-        await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
-    except AttributeError:
-        for platform in PLATFORMS:
-            _LOGGER.debug("Forwarding platform %s for entry_id=%s", platform, entry.entry_id)
-            await hass.config_entries.async_forward_entry_setup(entry, platform)
+    await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
     return True
 
@@ -97,7 +93,15 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
 class TauronDataUpdateCoordinator(DataUpdateCoordinator):
 
-    def __init__(self, hass: HomeAssistant, api: TauronAPI, *, update_minutes: int, filters: dict = None) -> None:
+    def __init__(
+        self,
+        hass: HomeAssistant,
+        entry: ConfigEntry | None,
+        api: TauronAPI,
+        *,
+        update_minutes: int,
+        filters: dict = None,
+    ) -> None:
         self.api = api
         self._filters = filters or {}
         self._unsub_transition: CALLBACK_TYPE | None = None
@@ -105,6 +109,7 @@ class TauronDataUpdateCoordinator(DataUpdateCoordinator):
         super().__init__(
             hass,
             _LOGGER,
+            config_entry=entry,
             name=DOMAIN,
             update_interval=timedelta(minutes=update_minutes),
         )
