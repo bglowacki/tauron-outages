@@ -103,5 +103,6 @@ def _street(city: CityMatch, item: Mapping[str, Any]) -> StreetMatch:
         gaid=str(item["GAID"]),
         name=name,
         label=(item.get("FullName") or name).strip(),
-        unnamed=not (item.get("Prefix") or "").strip() and name == city.name,
+        unnamed=not (item.get("Prefix") or "").strip()
+        and name.strip().casefold() == city.name.strip().casefold(),
     )

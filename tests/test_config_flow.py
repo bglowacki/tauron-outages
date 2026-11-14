@@ -234,6 +234,7 @@ async def test_details_prefill_name_and_locality_with_the_city_name(hass, regist
     assert result["step_id"] == "details"
     assert suggested(result, "name") == "Ogrodnica"
     assert suggested(result, "locality") == "Ogrodnica"
+    assert result["description_placeholders"]["street"] == "Ogrodnica (no street)"
 
 
 async def test_finishing_creates_entry_with_gaids_and_names(hass, register):

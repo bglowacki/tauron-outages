@@ -91,6 +91,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         self._city: CityMatch | None = None
         self._streets: list[StreetMatch] = []
         self._street: StreetMatch | None = None
+        self._street_labels: dict[str, str] = {}
 
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None
@@ -156,12 +157,13 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             return await self.async_step_details()
 
         no_street = await self._no_street_template()
-        choices = [
-            SelectOptionDict(
-                value=s.gaid,
-                label=no_street.format(city=s.name) if s.unnamed else s.label,
-            )
+        self._street_labels = {
+            s.gaid: no_street.format(city=s.name) if s.unnamed else s.label
             for s in self._streets
+        }
+        choices = [
+            SelectOptionDict(value=gaid, label=label)
+            for gaid, label in self._street_labels.items()
         ]
         return self.async_show_form(
             step_id="pick_street", data_schema=_pick_schema(STREET, choices)
@@ -204,7 +206,10 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 _details_schema(self._city.name), user_input or {}
             ),
             errors=errors,
-            description_placeholders={"city": self._city.label, "street": self._street.label},
+            description_placeholders={
+                "city": self._city.label,
+                "street": self._street_labels[self._street.gaid],
+            },
         )
 
     async def _no_street_template(self) -> str:
