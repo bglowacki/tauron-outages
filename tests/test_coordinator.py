@@ -21,7 +21,7 @@ def test_firing_notifies_listeners_rearms_and_does_not_fetch(clock):
         coordinator.async_add_listener(
             lambda: seen.append(coordinator.data.is_active(clock.now))
         )
-        calls_before = len(transport.requests)
+        requests_before = len(transport.requests)
 
         clock.fire()
         assert seen == [True]
@@ -30,7 +30,7 @@ def test_firing_notifies_listeners_rearms_and_does_not_fetch(clock):
         clock.fire()
         assert seen == [True, False]
         assert len(clock.pending) == 1
-        assert len(transport.requests) == calls_before
+        assert len(transport.requests) == requests_before
 
     run(scenario)
 
@@ -126,12 +126,12 @@ def test_apply_options_changes_locality_without_fetching(clock):
         coordinator.async_add_listener(
             lambda: seen.append(messages(coordinator.data))
         )
-        calls_before = len(transport.requests)
+        requests_before = len(transport.requests)
 
         coordinator.async_apply_options(locality="chwalimierz", update_minutes=60 * 168)
 
         assert seen == [["Chwalimierz"] * 4]
-        assert len(transport.requests) == calls_before
+        assert len(transport.requests) == requests_before
 
     run(scenario, locality="Ogrodnica")
 

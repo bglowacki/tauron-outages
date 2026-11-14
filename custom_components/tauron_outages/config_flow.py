@@ -20,9 +20,8 @@ from .const import (
 )
 from homeassistant.util import dt as dt_util
 
-from . import address_of
-from .http_transport import urllib_transport
-from .outage_feed import OutageFeed, OutageFeedError
+from . import outage_feed_for
+from .outage_feed import OutageFeedError
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -51,10 +50,8 @@ def _options_schema(locality: str, hours: int) -> vol.Schema:
 
 
 async def validate_input(hass: HomeAssistant, data: Dict[str, Any]) -> Dict[str, Any]:
-    feed = OutageFeed(address_of(data), urllib_transport(), dt_util.get_default_time_zone())
-
     try:
-        await feed.fetch(dt_util.utcnow())
+        await outage_feed_for(data).fetch(dt_util.utcnow())
     except OutageFeedError as err:
         raise CannotConnect from err
     except Exception as err:

@@ -1,5 +1,7 @@
 import logging
+from collections.abc import Mapping
 from datetime import timedelta
+from typing import Any
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
@@ -30,13 +32,9 @@ PLATFORMS: list[Platform] = [Platform.SENSOR, Platform.CALENDAR]
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     hass.data.setdefault(DOMAIN, {})
 
-    feed = OutageFeed(
-        address_of(entry.data), urllib_transport(), dt_util.get_default_time_zone()
-    )
-
     locality, update_minutes = _options_of(entry)
     coordinator = TauronDataUpdateCoordinator(
-        hass, entry, feed, update_minutes=update_minutes, locality=locality
+        hass, entry, outage_feed_for(entry.data), update_minutes=update_minutes, locality=locality
     )
     await coordinator.async_config_entry_first_refresh()
 
@@ -55,12 +53,13 @@ async def _async_options_updated(hass: HomeAssistant, entry: ConfigEntry) -> Non
     coordinator.async_apply_options(locality=locality, update_minutes=update_minutes)
 
 
-def address_of(data) -> Address:
-    return Address(
+def outage_feed_for(data: Mapping[str, Any]) -> OutageFeed:
+    address = Address(
         city_gaid=data[CONF_CITY_GAID],
         street_gaid=data[CONF_STREET_GAID],
         house_no=data[CONF_HOUSE_NO],
     )
+    return OutageFeed(address, urllib_transport(), dt_util.get_default_time_zone())
 
 
 def _options_of(entry: ConfigEntry) -> tuple[str, int]:

@@ -3,12 +3,15 @@ from __future__ import annotations
 import asyncio
 import threading
 import time
+from datetime import datetime, timezone
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 import pytest
 
 from tauron_outages.http_transport import BASE_URL, urllib_transport
-from tauron_outages.outage_feed import OutageFeedError
+from tauron_outages.outage_feed import OutageFeed, OutageFeedError
+
+from conftest import ADDRESS
 
 PARAMS = {
     "cityGAID": "111",
@@ -27,16 +30,19 @@ def server():
         def do_GET(self):
             state["paths"].append(self.path)
             time.sleep(state["delay"])
-            self.send_response(state["status"])
-            self.send_header("Content-Type", "text/html")
-            self.end_headers()
-            self.wfile.write(state["body"])
+            try:
+                self.send_response(state["status"])
+                self.send_header("Content-Type", "text/html")
+                self.end_headers()
+                self.wfile.write(state["body"])
+            except BrokenPipeError:
+                pass
 
         def log_message(self, *args):
             pass
 
     httpd = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
-    thread = threading.Thread(target=httpd.serve_forever, daemon=True)
+    thread = threading.Thread(target=httpd.serve_forever, args=(0.01,), daemon=True)
     thread.start()
     state["url"] = f"http://127.0.0.1:{httpd.server_address[1]}/waapi/outages/address"
     yield state
@@ -46,6 +52,11 @@ def server():
 
 def call(server, timeout=5):
     return asyncio.run(urllib_transport(server["url"], timeout=timeout)(PARAMS))
+
+
+def fetch_through_feed(url, timeout=5):
+    feed = OutageFeed(ADDRESS, urllib_transport(url, timeout=timeout), timezone.utc)
+    return asyncio.run(feed.fetch(datetime(2026, 11, 14, tzinfo=timezone.utc)))
 
 
 def test_points_at_tauron_by_default():
@@ -72,23 +83,23 @@ def test_http_error_status_is_a_feed_error(server, status):
     server["status"] = status
 
     with pytest.raises(OutageFeedError):
-        call(server)
+        fetch_through_feed(server["url"])
 
 
 def test_invalid_json_is_a_feed_error(server):
     server["body"] = b"<html>maintenance</html>"
 
     with pytest.raises(OutageFeedError):
-        call(server)
+        fetch_through_feed(server["url"])
 
 
 def test_timeout_is_a_feed_error(server):
     server["delay"] = 0.5
 
     with pytest.raises(OutageFeedError):
-        call(server, timeout=0.1)
+        fetch_through_feed(server["url"], timeout=0.1)
 
 
 def test_connection_refused_is_a_feed_error():
     with pytest.raises(OutageFeedError):
-        asyncio.run(urllib_transport("http://127.0.0.1:9/nothing", timeout=1)(PARAMS))
+        fetch_through_feed("http://127.0.0.1:9/nothing", timeout=1)

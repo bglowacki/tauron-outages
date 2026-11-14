@@ -10,15 +10,13 @@ from zoneinfo import ZoneInfo
 
 import pytest
 
-from tauron_outages.outage_feed import Address, OutageFeed, OutageFeedError
+from tauron_outages.outage_feed import OutageFeed, OutageFeedError
 
-from conftest import FixtureTransport
+from conftest import ADDRESS, FIXTURE, FixtureTransport
 
 UTC = timezone.utc
 WARSAW = ZoneInfo("Europe/Warsaw")
-FIXTURE = Path(__file__).parent / "fixtures" / "feed_ogrodnica_chwalimierz.json"
 MODULE = Path(__file__).parents[1] / "custom_components" / "tauron_outages" / "outage_feed.py"
-ADDRESS = Address(city_gaid="111", street_gaid="222", house_no="12A")
 
 
 def fetch(transport: FixtureTransport, now: datetime, tz=WARSAW):
@@ -87,13 +85,21 @@ def test_transport_failure_surfaces_as_feed_error():
         fetch(transport, datetime(2026, 11, 14, tzinfo=UTC))
 
 
-def test_requires_an_aware_now():
-    transport = FixtureTransport(payload=[])
+@pytest.mark.parametrize(
+    "failure",
+    [
+        TimeoutError("timed out"),
+        ConnectionResetError("reset by peer"),
+        json.JSONDecodeError("Expecting value", "<html>", 0),
+    ],
+)
+def test_any_transport_failure_surfaces_as_feed_error(failure):
+    transport = FixtureTransport(error=failure)
 
-    with pytest.raises(ValueError):
-        fetch(transport, datetime(2026, 11, 14))
+    with pytest.raises(OutageFeedError) as raised:
+        fetch(transport, datetime(2026, 11, 14, tzinfo=UTC))
 
-    assert transport.requests == []
+    assert raised.value.__cause__ is failure
 
 
 def test_module_imports_nothing_from_homeassistant():
