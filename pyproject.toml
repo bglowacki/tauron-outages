@@ -11,8 +11,14 @@ dependencies = [
 [dependency-groups]
 dev = [
     "pytest>=8",
+    "pytest-homeassistant-custom-component>=0.13.375,<0.14",
 ]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-pythonpath = ["custom_components"]
+pythonpath = [".", "custom_components"]
+addopts = ["-p", "homeassistant.const", "-p", "no:homeassistant"]
+asyncio_mode = "auto"
+
+[tool.uv]
+override-dependencies = ["homeassistant==2026.11.1"]
