@@ -8,11 +8,11 @@ A custom Home Assistant integration that monitors power outages from Tauron Dyst
 - **Next outage prediction**: Get information about upcoming planned outages
 - **Outage count**: Track the number of outages in the next 7 days
 - **Detailed attributes & items**: Access additional information like outage reasons, start/end times, and a normalized list of outages
-- **Locality**: Narrow results to outages whose message names your Locality (e.g. "Ogrodnica"); the Local group of entities follows it
+- **Locality**: Only outages whose message names your Locality (e.g. "Ogrodnica") are shown
 
 ## Entities
 
-For each configuration entry, the integration creates the following sensors and a calendar. The "Local" group follows the Locality (see Configuration below).
+For each configuration entry, the integration creates 4 sensors and 1 calendar. All of them show only Local outages: outages in your Locality, or every outage in the feed if no Locality is set (see Configuration below).
 
 1. **Outage Status** (`sensor.tauron_outage_status`)
    - State: "Active" or "Inactive"
@@ -31,25 +31,10 @@ For each configuration entry, the integration creates the following sensors and 
    - State: Same as outage count (number of outages)
    - Attributes: `outages` list (normalized dicts with outageId, startDate, endDate, message, type, isActive, modified), convenience flags `has_active`, `has_upcoming`
 
-Local group (outages in your Locality):
-
-5. **Local Next Outage** (`sensor.tauron_local_next_outage`)
-   - State: Timestamp of next outage among Local outages (or None)
-   - Device Class: timestamp
-   - Attributes: End time, reason, type
-
-6. **Local Outage Count** (`sensor.tauron_local_outage_count`)
-   - State: Number of outages matching filters
-   - Attributes: Active outages, upcoming outages, `is_active` flag
-
-7. **Local Outage Items** (`sensor.tauron_local_outage_items`)
-   - State: Same as Local outage count
-   - Attributes: `outages` list with same normalization as above, plus `has_active`, `has_upcoming`
-
-8. **Outages Calendar** (`calendar.<your_name>_outages`)
+5. **Outages Calendar** (`calendar.<your_name>_outages`)
    - Created automatically; no manual platform entry needed.
    - Name: Based on your configured Name (CONF_NAME), e.g. "My Home Outages".
-   - Current event shows the next outage; the calendar view lists all outages overlapping the selected range.
+   - Current event is the ongoing outage, otherwise the next one; the calendar view lists every outage overlapping the selected range.
 
 ## Installation
 
@@ -76,9 +61,13 @@ Local group (outages in your Locality):
    - **Name**: A friendly name for the integration
    - (Optional) **Locality**: The place whose outages are yours, e.g. "Ogrodnica"
 
+### Upgrading from a version with "Local" or "Filtered" entities
+
+Remove the integration and add it again. This creates the single set of entities under clean IDs (e.g. `calendar.<your_name>_outages`); the old `…_local_…` / `…_filtered_…` entities and their history are not carried over. Update automations and dashboards that referenced them.
+
 ### Locality
 
-- Tauron's feed covers a group of neighbouring addresses, so it often lists outages in nearby localities too. The Local entities show only outages whose message contains your Locality (case-insensitive substring match).
+- Tauron's feed covers a group of neighbouring addresses, so it often lists outages in nearby localities too. The entities show only outages whose message contains your Locality (case-insensitive substring match).
 - An empty Locality means every outage in the feed counts as yours.
 - The Locality and the update interval can be changed under **Configure** (Options) at any time. Changes apply immediately, without a restart and without a new request to Tauron. Clearing the Locality really clears it.
 
@@ -142,17 +131,6 @@ entities:
   - sensor.tauron_next_outage
   - sensor.tauron_outage_count
   - sensor.tauron_outage_items
-```
-
-#### Local examples
-
-```yaml
-# Local sensors card
-type: entities
-entities:
-  - sensor.tauron_local_outage_count
-  - sensor.tauron_local_next_outage
-  - sensor.tauron_local_outage_items
 ```
 
 #### Calendar Card

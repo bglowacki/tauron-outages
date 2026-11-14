@@ -36,30 +36,26 @@ def _event(outage: Outage) -> CalendarEvent:
     )
 
 
-class _BaseTauronOutagesCalendar(CoordinatorEntity[TauronDataUpdateCoordinator], CalendarEntity):
+async def async_setup_entry(
+    hass: HomeAssistant,
+    config_entry: ConfigEntry,
+    async_add_entities: AddEntitiesCallback,
+) -> None:
+    coordinator: TauronDataUpdateCoordinator = hass.data[DOMAIN][config_entry.entry_id]
+    async_add_entities([TauronOutagesCalendar(coordinator, config_entry)], False)
 
-    def __init__(
-        self,
-        coordinator: TauronDataUpdateCoordinator,
-        config_entry: ConfigEntry,
-        *,
-        name_suffix: str,
-        unique_id_suffix: str,
-        local_only: bool,
-    ) -> None:
+
+class TauronOutagesCalendar(CoordinatorEntity[TauronDataUpdateCoordinator], CalendarEntity):
+
+    def __init__(self, coordinator: TauronDataUpdateCoordinator, config_entry: ConfigEntry) -> None:
         super().__init__(coordinator)
-        self._local_only = local_only
-        base_name = config_entry.data.get(CONF_NAME, "Tauron")
-        self._attr_name = f"{base_name} {name_suffix}".strip()
-        self._attr_unique_id = f"{config_entry.entry_id}_{unique_id_suffix}"
+        self._attr_name = f"{config_entry.data.get(CONF_NAME, 'Tauron')} Outages"
+        self._attr_unique_id = f"{config_entry.entry_id}_calendar"
         self._attr_device_info = device_info(config_entry)
 
     @property
     def _schedule(self) -> OutageSchedule:
-        data = self.coordinator.data
-        if not data:
-            return OutageSchedule()
-        return data.local if self._local_only else data.schedule
+        return self.coordinator.data or OutageSchedule()
 
     @property
     def event(self) -> CalendarEvent | None:
@@ -72,42 +68,3 @@ class _BaseTauronOutagesCalendar(CoordinatorEntity[TauronDataUpdateCoordinator],
         self, hass: HomeAssistant, start_date: datetime, end_date: datetime
     ) -> list[CalendarEvent]:
         return [_event(o) for o in self._schedule.overlapping(start_date, end_date)]
-
-
-async def async_setup_entry(
-    hass: HomeAssistant,
-    config_entry: ConfigEntry,
-    async_add_entities: AddEntitiesCallback,
-) -> None:
-    coordinator: TauronDataUpdateCoordinator = hass.data[DOMAIN][config_entry.entry_id]
-    async_add_entities(
-        [
-            TauronOutagesCalendar(coordinator, config_entry),
-            TauronOutagesLocalCalendar(coordinator, config_entry),
-        ],
-        False,
-    )
-
-
-class TauronOutagesCalendar(_BaseTauronOutagesCalendar):
-
-    def __init__(self, coordinator: TauronDataUpdateCoordinator, config_entry: ConfigEntry) -> None:
-        super().__init__(
-            coordinator,
-            config_entry,
-            name_suffix="Outages",
-            unique_id_suffix="calendar",
-            local_only=False,
-        )
-
-
-class TauronOutagesLocalCalendar(_BaseTauronOutagesCalendar):
-
-    def __init__(self, coordinator: TauronDataUpdateCoordinator, config_entry: ConfigEntry) -> None:
-        super().__init__(
-            coordinator,
-            config_entry,
-            name_suffix="Local Outages",
-            unique_id_suffix="local_calendar",
-            local_only=True,
-        )

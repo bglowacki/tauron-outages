@@ -9,6 +9,6 @@ Tauron's address query returns an Outage feed covering a whole group of neighbou
 
 ## Consequences
 
-- Version 2 of the config entry migration removes the former unfiltered entities, together with their history. The filtered entities take over the clean entity IDs (e.g. `calendar.<name>_outages`).
-- Automations that referenced `…_filtered_…` entity IDs must be updated after the upgrade. Until then, the GoodWe pre-outage charge doesn't run; this risk was knowingly accepted.
+- There is no entity registry migration. The integration is removed and reinstalled, which creates the single set of entities under clean IDs (e.g. `calendar.<name>_outages`). Entity history is not preserved. The config entry stays at version 2; that migration only moves the Locality into Options.
+- Automations that referenced `…_filtered_…` or `…_local_…` entity IDs must be fixed by hand after the reinstall. Until then, the GoodWe pre-outage charge doesn't run; this risk was knowingly accepted.
 - The type filter was dropped. Tauron has only ever sent one outage type for this feed.
