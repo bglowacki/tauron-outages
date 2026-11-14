@@ -1,0 +1,50 @@
+[
+  {
+    "GUS": "0986283",
+    "DistrictGAID": 1047,
+    "ProvinceGAID": 2,
+    "CountryGAID": 1,
+    "CommuneName": "Wrocław",
+    "DistrictName": "Wrocław",
+    "ProvinceName": "Dolnośląskie",
+    "GAID": 119431,
+    "OwnerGAID": 3250,
+    "Name": "Wrocław"
+  },
+  {
+    "GUS": "0878435",
+    "DistrictGAID": 1030,
+    "ProvinceGAID": 2,
+    "CountryGAID": 1,
+    "CommuneName": "Milicz",
+    "DistrictName": "milicki",
+    "ProvinceName": "Dolnośląskie",
+    "GAID": 117916,
+    "OwnerGAID": 3098,
+    "Name": "Wrocławice"
+  },
+  {
+    "GUS": "0878458",
+    "DistrictGAID": 1030,
+    "ProvinceGAID": 2,
+    "CountryGAID": 1,
+    "CommuneName": "Milicz",
+    "DistrictName": "milicki",
+    "ProvinceName": "Dolnośląskie",
+    "GAID": 117960,
+    "OwnerGAID": 3098,
+    "Name": "Wrocławice-osada"
+  },
+  {
+    "GUS": "0848173",
+    "DistrictGAID": 1051,
+    "ProvinceGAID": 4,
+    "CountryGAID": 1,
+    "CommuneName": "Papowo Biskupie",
+    "DistrictName": "chełmiński",
+    "ProvinceName": "Kujawsko-pomorskie",
+    "GAID": 120010,
+    "OwnerGAID": 3295,
+    "Name": "Wrocławki"
+  }
+]

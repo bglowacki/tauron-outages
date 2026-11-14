@@ -1,0 +1,92 @@
+[
+  {
+    "StreetGUS": null,
+    "Prefix": " ",
+    "PostFix": null,
+    "FullName": "  A8",
+    "ShortName": "A8",
+    "GAID": 1025095,
+    "OwnerGAID": 119431,
+    "Name": "A8"
+  },
+  {
+    "StreetGUS": "06907",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Inowrocławska",
+    "ShortName": "Inowrocławska",
+    "GAID": 898612,
+    "OwnerGAID": 119431,
+    "Name": "Inowrocławska"
+  },
+  {
+    "StreetGUS": "47134",
+    "Prefix": "Skwer",
+    "PostFix": null,
+    "FullName": "Skwer Pionierów Wrocławskich",
+    "ShortName": "Pionierów Wrocławski",
+    "GAID": 898898,
+    "OwnerGAID": 119431,
+    "Name": "Pionierów Wrocławskich"
+  },
+  {
+    "StreetGUS": "32793",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Polonii Wrocławskiej",
+    "ShortName": "Polonii Wrocławskiej",
+    "GAID": 898783,
+    "OwnerGAID": 119431,
+    "Name": "Polonii Wrocławskiej"
+  },
+  {
+    "StreetGUS": "24805",
+    "Prefix": "ul.",
+    "PostFix": "Michała",
+    "FullName": "ul. Michała Wrocławczyka",
+    "ShortName": "Wrocławczyka",
+    "GAID": 898563,
+    "OwnerGAID": 119431,
+    "Name": "Wrocławczyka"
+  },
+  {
+    "StreetGUS": "56579",
+    "Prefix": "Skwer",
+    "PostFix": null,
+    "FullName": "Skwer Wrocławianek",
+    "ShortName": "Wrocławianek",
+    "GAID": 1036216,
+    "OwnerGAID": 119431,
+    "Name": "Wrocławianek"
+  },
+  {
+    "StreetGUS": "52372",
+    "Prefix": "Rondo",
+    "PostFix": null,
+    "FullName": "Rondo Wrocławskich Olimpijczyków",
+    "ShortName": "Wrocławskich Olimpij",
+    "GAID": 1018888,
+    "OwnerGAID": 119431,
+    "Name": "Wrocławskich Olimpijczyków"
+  },
+  {
+    "StreetGUS": "64330",
+    "Prefix": "Skwer",
+    "PostFix": null,
+    "FullName": "Skwer Wrocławskich Osiedli",
+    "ShortName": "Wrocławskich Osiedli",
+    "GAID": 1082543,
+    "OwnerGAID": 119431,
+    "Name": "Wrocławskich Osiedli"
+  },
+  {
+    "StreetGUS": "58209",
+    "Prefix": "Skwer",
+    "PostFix": null,
+    "FullName": "Skwer Wrocławskich Rotarian",
+    "ShortName": "Wrocławskich Rotaria",
+    "GAID": 1045622,
+    "OwnerGAID": 119431,
+    "Name": "Wrocławskich Rotarian"
+  }
+]

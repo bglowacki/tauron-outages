@@ -11,6 +11,8 @@ from .outage_feed_source import Transport
 _LOGGER = logging.getLogger(__name__)
 
 BASE_URL = "https://www.tauron-dystrybucja.pl/waapi/outages/address"
+CITIES_URL = "https://www.tauron-dystrybucja.pl/waapi/enum/geo/cities"
+STREETS_URL = "https://www.tauron-dystrybucja.pl/waapi/enum/geo/streets"
 TIMEOUT = 30
 
 

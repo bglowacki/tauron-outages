@@ -3,34 +3,67 @@
     "step": {
       "user": {
         "title": "Tauron - Przerwy w dostawie prądu",
-        "description": "Skonfiguruj monitorowanie przerw w dostawie prądu Tauron dla Twojego adresu",
+        "description": "Znajdź swoje miasto lub wieś w rejestrze adresów Tauron.",
         "data": {
-          "city_gaid": "GAID miasta",
-          "street_gaid": "GAID ulicy",
+          "city": "Miejscowość"
+        },
+        "data_description": {
+          "city": "Co najmniej 3 litery nazwy, z polskimi znakami (np. \"Wrocław\")."
+        }
+      },
+      "pick_city": {
+        "title": "Wybierz miejscowość",
+        "description": "Pasuje kilka miejscowości. Przy każdej podano gminę (gm.), powiat (pow.) i województwo.",
+        "data": {
+          "city": "Miejscowość"
+        }
+      },
+      "street": {
+        "title": "Znajdź ulicę",
+        "description": "Szukanie ulic w: {city}. We wsi bez nazw ulic zostaw jej nazwę i kliknij Zatwierdź.",
+        "data": {
+          "street": "Ulica"
+        },
+        "data_description": {
+          "street": "Co najmniej 3 litery z dowolnej części nazwy ulicy."
+        }
+      },
+      "pick_street": {
+        "title": "Wybierz ulicę",
+        "data": {
+          "street": "Ulica"
+        }
+      },
+      "details": {
+        "title": "Numer domu i nazwa",
+        "description": "{city}, {street}.",
+        "data": {
           "house_no": "Numer domu",
           "name": "Nazwa",
           "locality": "Miejscowość (opcjonalnie)"
         },
         "data_description": {
-          "city_gaid": "GAID miasta z systemu Tauron",
-          "street_gaid": "GAID ulicy z systemu Tauron",
-          "house_no": "Twój numer domu",
-          "name": "Przyjazna nazwa dla tej integracji",
+          "house_no": "Twój numer domu, tak jak na stronie Tauron.",
+          "name": "Nazwa urządzenia i początek identyfikatorów encji (np. calendar.<nazwa>_outages).",
           "locality": "Pokazywane są tylko przerwy, których komunikat wymienia tę miejscowość (np. \"Ogrodnica\"), bez rozróżniania wielkości liter. Pozostaw puste, aby uwzględnić wszystkie przerwy."
         }
       }
     },
     "error": {
       "cannot_connect": "Nie udało się połączyć z API Tauron",
-      "invalid_auth": "Nieprawidłowe uwierzytelnienie",
-      "unknown": "Wystąpił nieoczekiwany błąd"
+      "too_short": "Wpisz co najmniej 3 znaki.",
+      "no_matches": "Brak wyników dla '{query}'. Użyj polskich znaków, np. \"Wrocław\", a nie \"Wroclaw\".",
+      "too_many": "Ponad 20 wyników dla '{query}'. Wpisz więcej liter nazwy."
+    },
+    "abort": {
+      "already_configured": "Ten adres jest już skonfigurowany."
     }
   },
   "options": {
     "step": {
       "init": {
         "title": "Opcje integracji Tauron - Przerwy w dostawie prądu",
-        "description": "Zmień miejscowość i interwał aktualizacji bez ponownego dodawania integracji.",
+        "description": "Obserwowany adres: {address}\n\nZmień miejscowość i interwał aktualizacji bez ponownego dodawania integracji.",
         "data": {
           "locality": "Miejscowość (opcjonalnie)",
           "update_interval_hours": "Interwał aktualizacji (godziny)"
@@ -39,6 +72,13 @@
           "locality": "Pokazywane są tylko przerwy, których komunikat wymienia tę miejscowość (np. \"Ogrodnica\"), bez rozróżniania wielkości liter. Pozostaw puste, aby uwzględnić wszystkie przerwy.",
           "update_interval_hours": "Jak często odpytywać API Tauron. Minimum 1, domyślnie 4 godziny."
         }
+      }
+    }
+  },
+  "selector": {
+    "street": {
+      "options": {
+        "no_street": "{city} (bez ulicy)"
       }
     }
   }

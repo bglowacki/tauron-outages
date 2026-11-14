@@ -1,0 +1,1502 @@
+[
+  {
+    "StreetGUS": "00126",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Admiralska",
+    "ShortName": "Admiralska",
+    "GAID": 897969,
+    "OwnerGAID": 119431,
+    "Name": "Admiralska"
+  },
+  {
+    "StreetGUS": "00133",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Afgańska",
+    "ShortName": "Afgańska",
+    "GAID": 897368,
+    "OwnerGAID": 119431,
+    "Name": "Afgańska"
+  },
+  {
+    "StreetGUS": "00242",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Alpejska",
+    "ShortName": "Alpejska",
+    "GAID": 897370,
+    "OwnerGAID": 119431,
+    "Name": "Alpejska"
+  },
+  {
+    "StreetGUS": "00316",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Angielska",
+    "ShortName": "Angielska",
+    "GAID": 897666,
+    "OwnerGAID": 119431,
+    "Name": "Angielska"
+  },
+  {
+    "StreetGUS": "00378",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Aptekarska",
+    "ShortName": "Aptekarska",
+    "GAID": 897972,
+    "OwnerGAID": 119431,
+    "Name": "Aptekarska"
+  },
+  {
+    "StreetGUS": "00380",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Arabska",
+    "ShortName": "Arabska",
+    "GAID": 897142,
+    "OwnerGAID": 119431,
+    "Name": "Arabska"
+  },
+  {
+    "StreetGUS": "00417",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Armeńska",
+    "ShortName": "Armeńska",
+    "GAID": 1025511,
+    "OwnerGAID": 119431,
+    "Name": "Armeńska"
+  },
+  {
+    "StreetGUS": "00457",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Artyleryjska",
+    "ShortName": "Artyleryjska",
+    "GAID": 898450,
+    "OwnerGAID": 119431,
+    "Name": "Artyleryjska"
+  },
+  {
+    "StreetGUS": "00493",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Augustowska",
+    "ShortName": "Augustowska",
+    "GAID": 898234,
+    "OwnerGAID": 119431,
+    "Name": "Augustowska"
+  },
+  {
+    "StreetGUS": "00505",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Australijska",
+    "ShortName": "Australijska",
+    "GAID": 898451,
+    "OwnerGAID": 119431,
+    "Name": "Australijska"
+  },
+  {
+    "StreetGUS": "00535",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Babimojska",
+    "ShortName": "Babimojska",
+    "GAID": 897974,
+    "OwnerGAID": 119431,
+    "Name": "Babimojska"
+  },
+  {
+    "StreetGUS": "00541",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Babiogórska",
+    "ShortName": "Babiogórska",
+    "GAID": 1009623,
+    "OwnerGAID": 119431,
+    "Name": "Babiogórska"
+  },
+  {
+    "StreetGUS": "00745",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Barczewska",
+    "ShortName": "Barczewska",
+    "GAID": 897976,
+    "OwnerGAID": 119431,
+    "Name": "Barczewska"
+  },
+  {
+    "StreetGUS": "46030",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Baskijska",
+    "ShortName": "Baskijska",
+    "GAID": 994041,
+    "OwnerGAID": 119431,
+    "Name": "Baskijska"
+  },
+  {
+    "StreetGUS": "00654",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Bałkańska",
+    "ShortName": "Bałkańska",
+    "GAID": 897672,
+    "OwnerGAID": 119431,
+    "Name": "Bałkańska"
+  },
+  {
+    "StreetGUS": "00956",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Bednarska",
+    "ShortName": "Bednarska",
+    "GAID": 897673,
+    "OwnerGAID": 119431,
+    "Name": "Bednarska"
+  },
+  {
+    "StreetGUS": "00979",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Belgijska",
+    "ShortName": "Belgijska",
+    "GAID": 897674,
+    "OwnerGAID": 119431,
+    "Name": "Belgijska"
+  },
+  {
+    "StreetGUS": "01023",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Benedyktyńska",
+    "ShortName": "Benedyktyńska",
+    "GAID": 898589,
+    "OwnerGAID": 119431,
+    "Name": "Benedyktyńska"
+  },
+  {
+    "StreetGUS": "01028",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Bengalska",
+    "ShortName": "Bengalska",
+    "GAID": 897675,
+    "OwnerGAID": 119431,
+    "Name": "Bengalska"
+  },
+  {
+    "StreetGUS": "01087",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Bernardyńska",
+    "ShortName": "Bernardyńska",
+    "GAID": 898454,
+    "OwnerGAID": 119431,
+    "Name": "Bernardyńska"
+  },
+  {
+    "StreetGUS": "01163",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Białkowska",
+    "ShortName": "Białkowska",
+    "GAID": 1029342,
+    "OwnerGAID": 119431,
+    "Name": "Białkowska"
+  },
+  {
+    "StreetGUS": "01182",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Białoruska",
+    "ShortName": "Białoruska",
+    "GAID": 897981,
+    "OwnerGAID": 119431,
+    "Name": "Białoruska"
+  },
+  {
+    "StreetGUS": "01189",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Białowieska",
+    "ShortName": "Białowieska",
+    "GAID": 898239,
+    "OwnerGAID": 119431,
+    "Name": "Białowieska"
+  },
+  {
+    "StreetGUS": "01246",
+    "Prefix": "Wyspa",
+    "PostFix": null,
+    "FullName": "Wyspa Bielarska",
+    "ShortName": "Bielarska",
+    "GAID": 898904,
+    "OwnerGAID": 119431,
+    "Name": "Bielarska"
+  },
+  {
+    "StreetGUS": "01250",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Bielawska",
+    "ShortName": "Bielawska",
+    "GAID": 897678,
+    "OwnerGAID": 119431,
+    "Name": "Bielawska"
+  },
+  {
+    "StreetGUS": "01296",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Bierdzańska",
+    "ShortName": "Bierdzańska",
+    "GAID": 898240,
+    "OwnerGAID": 119431,
+    "Name": "Bierdzańska"
+  },
+  {
+    "StreetGUS": "01316",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Bierutowska",
+    "ShortName": "Bierutowska",
+    "GAID": 898241,
+    "OwnerGAID": 119431,
+    "Name": "Bierutowska"
+  },
+  {
+    "StreetGUS": "29466",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Birmańska",
+    "ShortName": "Birmańska",
+    "GAID": 897680,
+    "OwnerGAID": 119431,
+    "Name": "Birmańska"
+  },
+  {
+    "StreetGUS": "01348",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Biłgorajska",
+    "ShortName": "Biłgorajska",
+    "GAID": 993275,
+    "OwnerGAID": 119431,
+    "Name": "Biłgorajska"
+  },
+  {
+    "StreetGUS": "01395",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Blacharska",
+    "ShortName": "Blacharska",
+    "GAID": 897982,
+    "OwnerGAID": 119431,
+    "Name": "Blacharska"
+  },
+  {
+    "StreetGUS": "01413",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Bliska",
+    "ShortName": "Bliska",
+    "GAID": 896973,
+    "OwnerGAID": 119431,
+    "Name": "Bliska"
+  },
+  {
+    "StreetGUS": "01502",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Bobrzańska",
+    "ShortName": "Bobrzańska",
+    "GAID": 897984,
+    "OwnerGAID": 119431,
+    "Name": "Bobrzańska"
+  },
+  {
+    "StreetGUS": "01506",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Bocheńska",
+    "ShortName": "Bocheńska",
+    "GAID": 897681,
+    "OwnerGAID": 119431,
+    "Name": "Bocheńska"
+  },
+  {
+    "StreetGUS": "01563",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Bogatyńska",
+    "ShortName": "Bogatyńska",
+    "GAID": 1022128,
+    "OwnerGAID": 119431,
+    "Name": "Bogatyńska"
+  },
+  {
+    "StreetGUS": "01614",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Boguszowska",
+    "ShortName": "Boguszowska",
+    "GAID": 898242,
+    "OwnerGAID": 119431,
+    "Name": "Boguszowska"
+  },
+  {
+    "StreetGUS": "01703",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Bojanowska",
+    "ShortName": "Bojanowska",
+    "GAID": 897985,
+    "OwnerGAID": 119431,
+    "Name": "Bojanowska"
+  },
+  {
+    "StreetGUS": "01780",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Bolkowska",
+    "ShortName": "Bolkowska",
+    "GAID": 897684,
+    "OwnerGAID": 119431,
+    "Name": "Bolkowska"
+  },
+  {
+    "StreetGUS": "01787",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Bombardierska",
+    "ShortName": "Bombardierska",
+    "GAID": 898592,
+    "OwnerGAID": 119431,
+    "Name": "Bombardierska"
+  },
+  {
+    "StreetGUS": "01866",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Borowska",
+    "ShortName": "Borowska",
+    "GAID": 897386,
+    "OwnerGAID": 119431,
+    "Name": "Borowska"
+  },
+  {
+    "StreetGUS": "02036",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Braniborska",
+    "ShortName": "Braniborska",
+    "GAID": 898244,
+    "OwnerGAID": 119431,
+    "Name": "Braniborska"
+  },
+  {
+    "StreetGUS": "02042",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Braniewska",
+    "ShortName": "Braniewska",
+    "GAID": 897987,
+    "OwnerGAID": 119431,
+    "Name": "Braniewska"
+  },
+  {
+    "StreetGUS": "02048",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Braterska",
+    "ShortName": "Braterska",
+    "GAID": 897685,
+    "OwnerGAID": 119431,
+    "Name": "Braterska"
+  },
+  {
+    "StreetGUS": "02063",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Bratysławska",
+    "ShortName": "Bratysławska",
+    "GAID": 898460,
+    "OwnerGAID": 119431,
+    "Name": "Bratysławska"
+  },
+  {
+    "StreetGUS": "02082",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Brochowska",
+    "ShortName": "Brochowska",
+    "GAID": 897988,
+    "OwnerGAID": 119431,
+    "Name": "Brochowska"
+  },
+  {
+    "StreetGUS": "02230",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Brzeska",
+    "ShortName": "Brzeska",
+    "GAID": 897154,
+    "OwnerGAID": 119431,
+    "Name": "Brzeska"
+  },
+  {
+    "StreetGUS": "02247",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Brzezińska",
+    "ShortName": "Brzezińska",
+    "GAID": 897990,
+    "OwnerGAID": 119431,
+    "Name": "Brzezińska"
+  },
+  {
+    "StreetGUS": "02269",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Brzostowska",
+    "ShortName": "Brzostowska",
+    "GAID": 898245,
+    "OwnerGAID": 119431,
+    "Name": "Brzostowska"
+  },
+  {
+    "StreetGUS": "51761",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Brzuchowicka",
+    "ShortName": "Brzuchowicka",
+    "GAID": 898500,
+    "OwnerGAID": 119431,
+    "Name": "Brzuchowicka"
+  },
+  {
+    "StreetGUS": "02353",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Budziszyńska",
+    "ShortName": "Budziszyńska",
+    "GAID": 898461,
+    "OwnerGAID": 119431,
+    "Name": "Budziszyńska"
+  },
+  {
+    "StreetGUS": "02476",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Buska",
+    "ShortName": "Buska",
+    "GAID": 896899,
+    "OwnerGAID": 119431,
+    "Name": "Buska"
+  },
+  {
+    "StreetGUS": "02436",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Bułgarska",
+    "ShortName": "Bułgarska",
+    "GAID": 897690,
+    "OwnerGAID": 119431,
+    "Name": "Bułgarska"
+  },
+  {
+    "StreetGUS": "02495",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Byczyńska",
+    "ShortName": "Byczyńska",
+    "GAID": 897691,
+    "OwnerGAID": 119431,
+    "Name": "Byczyńska"
+  },
+  {
+    "StreetGUS": "02498",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Bydgoska",
+    "ShortName": "Bydgoska",
+    "GAID": 897395,
+    "OwnerGAID": 119431,
+    "Name": "Bydgoska"
+  },
+  {
+    "StreetGUS": "02528",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Bytomska",
+    "ShortName": "Bytomska",
+    "GAID": 897396,
+    "OwnerGAID": 119431,
+    "Name": "Bytomska"
+  },
+  {
+    "StreetGUS": "02530",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Bytowska",
+    "ShortName": "Bytowska",
+    "GAID": 897397,
+    "OwnerGAID": 119431,
+    "Name": "Bytowska"
+  },
+  {
+    "StreetGUS": "01469",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Błońska",
+    "ShortName": "Błońska",
+    "GAID": 990990,
+    "OwnerGAID": 119431,
+    "Name": "Błońska"
+  },
+  {
+    "StreetGUS": "01125",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Będkowska",
+    "ShortName": "Będkowska",
+    "GAID": 897692,
+    "OwnerGAID": 119431,
+    "Name": "Będkowska"
+  },
+  {
+    "StreetGUS": "01127",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Będzińska",
+    "ShortName": "Będzińska",
+    "GAID": 897693,
+    "OwnerGAID": 119431,
+    "Name": "Będzińska"
+  },
+  {
+    "StreetGUS": "02672",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Charkowska",
+    "ShortName": "Charkowska",
+    "GAID": 897993,
+    "OwnerGAID": 119431,
+    "Name": "Charkowska"
+  },
+  {
+    "StreetGUS": "02709",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Chełmska",
+    "ShortName": "Chełmska",
+    "GAID": 897402,
+    "OwnerGAID": 119431,
+    "Name": "Chełmska"
+  },
+  {
+    "StreetGUS": "02720",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Chińska",
+    "ShortName": "Chińska",
+    "GAID": 897160,
+    "OwnerGAID": 119431,
+    "Name": "Chińska"
+  },
+  {
+    "StreetGUS": "02755",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Chmielarska",
+    "ShortName": "Chmielarska",
+    "GAID": 898249,
+    "OwnerGAID": 119431,
+    "Name": "Chmielarska"
+  },
+  {
+    "StreetGUS": "02777",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Chobieńska",
+    "ShortName": "Chobieńska",
+    "GAID": 897994,
+    "OwnerGAID": 119431,
+    "Name": "Chobieńska"
+  },
+  {
+    "StreetGUS": "02784",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Chocianowska",
+    "ShortName": "Chocianowska",
+    "GAID": 1043361,
+    "OwnerGAID": 119431,
+    "Name": "Chocianowska"
+  },
+  {
+    "StreetGUS": "02786",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Chociebuska",
+    "ShortName": "Chociebuska",
+    "GAID": 898250,
+    "OwnerGAID": 119431,
+    "Name": "Chociebuska"
+  },
+  {
+    "StreetGUS": "02790",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Chocimska",
+    "ShortName": "Chocimska",
+    "GAID": 897698,
+    "OwnerGAID": 119431,
+    "Name": "Chocimska"
+  },
+  {
+    "StreetGUS": "02828",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Chojnowska",
+    "ShortName": "Chojnowska",
+    "GAID": 897995,
+    "OwnerGAID": 119431,
+    "Name": "Chojnowska"
+  },
+  {
+    "StreetGUS": "02830",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Cholewkarska",
+    "ShortName": "Cholewkarska",
+    "GAID": 898465,
+    "OwnerGAID": 119431,
+    "Name": "Cholewkarska"
+  },
+  {
+    "StreetGUS": "02863",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Chorzowska",
+    "ShortName": "Chorzowska",
+    "GAID": 897996,
+    "OwnerGAID": 119431,
+    "Name": "Chorzowska"
+  },
+  {
+    "StreetGUS": "55159",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Chrząstawska",
+    "ShortName": "Chrząstawska",
+    "GAID": 1027926,
+    "OwnerGAID": 119431,
+    "Name": "Chrząstawska"
+  },
+  {
+    "StreetGUS": "02935",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Chwalimierska",
+    "ShortName": "Chwalimierska",
+    "GAID": 974445,
+    "OwnerGAID": 119431,
+    "Name": "Chwalimierska"
+  },
+  {
+    "StreetGUS": "02941",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Chwałkowska",
+    "ShortName": "Chwałkowska",
+    "GAID": 898251,
+    "OwnerGAID": 119431,
+    "Name": "Chwałkowska"
+  },
+  {
+    "StreetGUS": "02750",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Chłopska",
+    "ShortName": "Chłopska",
+    "GAID": 897405,
+    "OwnerGAID": 119431,
+    "Name": "Chłopska"
+  },
+  {
+    "StreetGUS": "02715",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Chęcińska",
+    "ShortName": "Chęcińska",
+    "GAID": 897700,
+    "OwnerGAID": 119431,
+    "Name": "Chęcińska"
+  },
+  {
+    "StreetGUS": "02994",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Ciechanowska",
+    "ShortName": "Ciechanowska",
+    "GAID": 994045,
+    "OwnerGAID": 119431,
+    "Name": "Ciechanowska"
+  },
+  {
+    "StreetGUS": "02997",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Ciechocińska",
+    "ShortName": "Ciechocińska",
+    "GAID": 898466,
+    "OwnerGAID": 119431,
+    "Name": "Ciechocińska"
+  },
+  {
+    "StreetGUS": "03061",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Cieszyńska",
+    "ShortName": "Cieszyńska",
+    "GAID": 1017861,
+    "OwnerGAID": 119431,
+    "Name": "Cieszyńska"
+  },
+  {
+    "StreetGUS": "03190",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Cypryjska",
+    "ShortName": "Cypryjska",
+    "GAID": 1022125,
+    "OwnerGAID": 119431,
+    "Name": "Cypryjska"
+  },
+  {
+    "StreetGUS": "03296",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Czarnoleska",
+    "ShortName": "Czarnoleska",
+    "GAID": 898254,
+    "OwnerGAID": 119431,
+    "Name": "Czarnoleska"
+  },
+  {
+    "StreetGUS": "30000",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Czerniawska",
+    "ShortName": "Czerniawska",
+    "GAID": 898259,
+    "OwnerGAID": 119431,
+    "Name": "Czerniawska"
+  },
+  {
+    "StreetGUS": "03450",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Czeska",
+    "ShortName": "Czeska",
+    "GAID": 896985,
+    "OwnerGAID": 119431,
+    "Name": "Czeska"
+  },
+  {
+    "StreetGUS": "03471",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Czorsztyńska",
+    "ShortName": "Czorsztyńska",
+    "GAID": 898467,
+    "OwnerGAID": 119431,
+    "Name": "Czorsztyńska"
+  },
+  {
+    "StreetGUS": "03458",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Częstochowska",
+    "ShortName": "Częstochowska",
+    "GAID": 898602,
+    "OwnerGAID": 119431,
+    "Name": "Częstochowska"
+  },
+  {
+    "StreetGUS": "03616",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Darłowska",
+    "ShortName": "Darłowska",
+    "GAID": 897704,
+    "OwnerGAID": 119431,
+    "Name": "Darłowska"
+  },
+  {
+    "StreetGUS": "03726",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Dekarska",
+    "ShortName": "Dekarska",
+    "GAID": 897410,
+    "OwnerGAID": 119431,
+    "Name": "Dekarska"
+  },
+  {
+    "StreetGUS": "03973",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Dobrzańska",
+    "ShortName": "Dobrzańska",
+    "GAID": 898003,
+    "OwnerGAID": 119431,
+    "Name": "Dobrzańska"
+  },
+  {
+    "StreetGUS": "03995",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Dobrzyńska",
+    "ShortName": "Dobrzyńska",
+    "GAID": 898004,
+    "OwnerGAID": 119431,
+    "Name": "Dobrzyńska"
+  },
+  {
+    "StreetGUS": "04008",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Dokerska",
+    "ShortName": "Dokerska",
+    "GAID": 897411,
+    "OwnerGAID": 119431,
+    "Name": "Dokerska"
+  },
+  {
+    "StreetGUS": "04049",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Dolnobrzeska",
+    "ShortName": "Dolnobrzeska",
+    "GAID": 898470,
+    "OwnerGAID": 119431,
+    "Name": "Dolnobrzeska"
+  },
+  {
+    "StreetGUS": "04088",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Domasławska",
+    "ShortName": "Domasławska",
+    "GAID": 898262,
+    "OwnerGAID": 119431,
+    "Name": "Domasławska"
+  },
+  {
+    "StreetGUS": "04279",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Drukarska",
+    "ShortName": "Drukarska",
+    "GAID": 897709,
+    "OwnerGAID": 119431,
+    "Name": "Drukarska"
+  },
+  {
+    "StreetGUS": "60130",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Dublańska",
+    "ShortName": "Dublańska",
+    "GAID": 1054248,
+    "OwnerGAID": 119431,
+    "Name": "Dublańska"
+  },
+  {
+    "StreetGUS": "04367",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Dukielska",
+    "ShortName": "Dukielska",
+    "GAID": 1027927,
+    "OwnerGAID": 119431,
+    "Name": "Dukielska"
+  },
+  {
+    "StreetGUS": "04405",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Duńska",
+    "ShortName": "Duńska",
+    "GAID": 896992,
+    "OwnerGAID": 119431,
+    "Name": "Duńska"
+  },
+  {
+    "StreetGUS": "04446",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Dworska",
+    "ShortName": "Dworska",
+    "GAID": 897173,
+    "OwnerGAID": 119431,
+    "Name": "Dworska"
+  },
+  {
+    "StreetGUS": "04565",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Dziadoszańska",
+    "ShortName": "Dziadoszańska",
+    "GAID": 898607,
+    "OwnerGAID": 119431,
+    "Name": "Dziadoszańska"
+  },
+  {
+    "StreetGUS": "04594",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Dziarska",
+    "ShortName": "Dziarska",
+    "GAID": 897415,
+    "OwnerGAID": 119431,
+    "Name": "Dziarska"
+  },
+  {
+    "StreetGUS": "04568",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Działdowska",
+    "ShortName": "Działdowska",
+    "GAID": 898264,
+    "OwnerGAID": 119431,
+    "Name": "Działdowska"
+  },
+  {
+    "StreetGUS": "04580",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Działoszyńska",
+    "ShortName": "Działoszyńska",
+    "GAID": 1025509,
+    "OwnerGAID": 119431,
+    "Name": "Działoszyńska"
+  },
+  {
+    "StreetGUS": "04649",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Dzierżoniowska",
+    "ShortName": "Dzierżoniowska",
+    "GAID": 898683,
+    "OwnerGAID": 119431,
+    "Name": "Dzierżoniowska"
+  },
+  {
+    "StreetGUS": "04712",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Dziwnowska",
+    "ShortName": "Dziwnowska",
+    "GAID": 898008,
+    "OwnerGAID": 119431,
+    "Name": "Dziwnowska"
+  },
+  {
+    "StreetGUS": "04724",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Dźwirzyńska",
+    "ShortName": "Dźwirzyńska",
+    "GAID": 898266,
+    "OwnerGAID": 119431,
+    "Name": "Dźwirzyńska"
+  },
+  {
+    "StreetGUS": "03847",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Długopolska",
+    "ShortName": "Długopolska",
+    "GAID": 898267,
+    "OwnerGAID": 119431,
+    "Name": "Długopolska"
+  },
+  {
+    "StreetGUS": "03703",
+    "Prefix": "al.",
+    "PostFix": null,
+    "FullName": "al. Dąbska",
+    "ShortName": "Dąbska",
+    "GAID": 896797,
+    "OwnerGAID": 119431,
+    "Name": "Dąbska"
+  },
+  {
+    "StreetGUS": "55781",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Edytorska",
+    "ShortName": "Edytorska",
+    "GAID": 1031728,
+    "OwnerGAID": 119431,
+    "Name": "Edytorska"
+  },
+  {
+    "StreetGUS": "04758",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Elbląska",
+    "ShortName": "Elbląska",
+    "GAID": 897418,
+    "OwnerGAID": 119431,
+    "Name": "Elbląska"
+  },
+  {
+    "StreetGUS": "04833",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Estońska",
+    "ShortName": "Estońska",
+    "GAID": 897420,
+    "OwnerGAID": 119431,
+    "Name": "Estońska"
+  },
+  {
+    "StreetGUS": "05005",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Filipińska",
+    "ShortName": "Filipińska",
+    "GAID": 898012,
+    "OwnerGAID": 119431,
+    "Name": "Filipińska"
+  },
+  {
+    "StreetGUS": "05055",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Fizylierska",
+    "ShortName": "Fizylierska",
+    "GAID": 898271,
+    "OwnerGAID": 119431,
+    "Name": "Fizylierska"
+  },
+  {
+    "StreetGUS": "05151",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Franciszkańska",
+    "ShortName": "Franciszkańska",
+    "GAID": 898684,
+    "OwnerGAID": 119431,
+    "Name": "Franciszkańska"
+  },
+  {
+    "StreetGUS": "05154",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Francuska",
+    "ShortName": "Francuska",
+    "GAID": 897719,
+    "OwnerGAID": 119431,
+    "Name": "Francuska"
+  },
+  {
+    "StreetGUS": "05188",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Fromborska",
+    "ShortName": "Fromborska",
+    "GAID": 898015,
+    "OwnerGAID": 119431,
+    "Name": "Fromborska"
+  },
+  {
+    "StreetGUS": "05202",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Fryzjerska",
+    "ShortName": "Fryzjerska",
+    "GAID": 898016,
+    "OwnerGAID": 119431,
+    "Name": "Fryzjerska"
+  },
+  {
+    "StreetGUS": "05345",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Garncarska",
+    "ShortName": "Garncarska",
+    "GAID": 898017,
+    "OwnerGAID": 119431,
+    "Name": "Garncarska"
+  },
+  {
+    "StreetGUS": "05350",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Garwolińska",
+    "ShortName": "Garwolińska",
+    "GAID": 898272,
+    "OwnerGAID": 119431,
+    "Name": "Garwolińska"
+  },
+  {
+    "StreetGUS": "05305",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Gałowska",
+    "ShortName": "Gałowska",
+    "GAID": 897425,
+    "OwnerGAID": 119431,
+    "Name": "Gałowska"
+  },
+  {
+    "StreetGUS": "05431",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Gdańska",
+    "ShortName": "Gdańska",
+    "GAID": 897181,
+    "OwnerGAID": 119431,
+    "Name": "Gdańska"
+  },
+  {
+    "StreetGUS": "05531",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Giserska",
+    "ShortName": "Giserska",
+    "GAID": 1004084,
+    "OwnerGAID": 119431,
+    "Name": "Giserska"
+  },
+  {
+    "StreetGUS": "05670",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Gnieźnieńska",
+    "ShortName": "Gnieźnieńska",
+    "GAID": 898473,
+    "OwnerGAID": 119431,
+    "Name": "Gnieźnieńska"
+  },
+  {
+    "StreetGUS": "05708",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Gogolińska",
+    "ShortName": "Gogolińska",
+    "GAID": 898019,
+    "OwnerGAID": 119431,
+    "Name": "Gogolińska"
+  },
+  {
+    "StreetGUS": "05853",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Gospodarska",
+    "ShortName": "Gospodarska",
+    "GAID": 898277,
+    "OwnerGAID": 119431,
+    "Name": "Gospodarska"
+  },
+  {
+    "StreetGUS": "05860",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Gostyńska",
+    "ShortName": "Gostyńska",
+    "GAID": 897724,
+    "OwnerGAID": 119431,
+    "Name": "Gostyńska"
+  },
+  {
+    "StreetGUS": "05759",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Gołdapska",
+    "ShortName": "Gołdapska",
+    "GAID": 1005683,
+    "OwnerGAID": 119431,
+    "Name": "Gołdapska"
+  },
+  {
+    "StreetGUS": "05776",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Gołnowska",
+    "ShortName": "Gołnowska",
+    "GAID": 897725,
+    "OwnerGAID": 119431,
+    "Name": "Gołnowska"
+  },
+  {
+    "StreetGUS": "06006",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Grabarska",
+    "ShortName": "Grabarska",
+    "GAID": 897727,
+    "OwnerGAID": 119431,
+    "Name": "Grabarska"
+  },
+  {
+    "StreetGUS": "06021",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Grabiszyńska",
+    "ShortName": "Grabiszyńska",
+    "GAID": 898475,
+    "OwnerGAID": 119431,
+    "Name": "Grabiszyńska"
+  },
+  {
+    "StreetGUS": "06064",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Grajewska",
+    "ShortName": "Grajewska",
+    "GAID": 1012362,
+    "OwnerGAID": 119431,
+    "Name": "Grajewska"
+  },
+  {
+    "StreetGUS": "06081",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Grawerska",
+    "ShortName": "Grawerska",
+    "GAID": 897731,
+    "OwnerGAID": 119431,
+    "Name": "Grawerska"
+  },
+  {
+    "StreetGUS": "06123",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Grobla Kozanowska",
+    "ShortName": "Grobla Kozanowska",
+    "GAID": 898752,
+    "OwnerGAID": 119431,
+    "Name": "Grobla Kozanowska"
+  },
+  {
+    "StreetGUS": "06124",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Grobla Łaniewska",
+    "ShortName": "Grobla Łaniewska",
+    "GAID": 898736,
+    "OwnerGAID": 119431,
+    "Name": "Grobla Łaniewska"
+  },
+  {
+    "StreetGUS": "06157",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Grodzieńska",
+    "ShortName": "Grodzieńska",
+    "GAID": 898279,
+    "OwnerGAID": 119431,
+    "Name": "Grodzieńska"
+  },
+  {
+    "StreetGUS": "06279",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Gruzińska",
+    "ShortName": "Gruzińska",
+    "GAID": 994047,
+    "OwnerGAID": 119431,
+    "Name": "Gruzińska"
+  },
+  {
+    "StreetGUS": "55778",
+    "Prefix": "Rondo",
+    "PostFix": null,
+    "FullName": "Rondo Gruzińskich Oficerów Wojska Polskiego",
+    "ShortName": "Gruzińskich Oficerów",
+    "GAID": 1031725,
+    "OwnerGAID": 119431,
+    "Name": "Gruzińskich Oficerów Wojska Polskiego"
+  },
+  {
+    "StreetGUS": "06280",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Grybowska",
+    "ShortName": "Grybowska",
+    "GAID": 897734,
+    "OwnerGAID": 119431,
+    "Name": "Grybowska"
+  },
+  {
+    "StreetGUS": "06359",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Gubińska",
+    "ShortName": "Gubińska",
+    "GAID": 897438,
+    "OwnerGAID": 119431,
+    "Name": "Gubińska"
+  },
+  {
+    "StreetGUS": "06427",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Gwizdanowska",
+    "ShortName": "Gwizdanowska",
+    "GAID": 898476,
+    "OwnerGAID": 119431,
+    "Name": "Gwizdanowska"
+  },
+  {
+    "StreetGUS": "05614",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Głogowska",
+    "ShortName": "Głogowska",
+    "GAID": 897735,
+    "OwnerGAID": 119431,
+    "Name": "Głogowska"
+  },
+  {
+    "StreetGUS": "05408",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Gądowska",
+    "ShortName": "Gądowska",
+    "GAID": 897440,
+    "OwnerGAID": 119431,
+    "Name": "Gądowska"
+  },
+  {
+    "StreetGUS": "05924",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Góralska",
+    "ShortName": "Góralska",
+    "GAID": 897441,
+    "OwnerGAID": 119431,
+    "Name": "Góralska"
+  },
+  {
+    "StreetGUS": "05976",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Górnośląska",
+    "ShortName": "Górnośląska",
+    "GAID": 898286,
+    "OwnerGAID": 119431,
+    "Name": "Górnośląska"
+  },
+  {
+    "StreetGUS": "06523",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Harcerska",
+    "ShortName": "Harcerska",
+    "GAID": 897737,
+    "OwnerGAID": 119431,
+    "Name": "Harcerska"
+  },
+  {
+    "StreetGUS": "06565",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Heblarska",
+    "ShortName": "Heblarska",
+    "GAID": 897738,
+    "OwnerGAID": 119431,
+    "Name": "Heblarska"
+  },
+  {
+    "StreetGUS": "06587",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Helska",
+    "ShortName": "Helska",
+    "GAID": 897005,
+    "OwnerGAID": 119431,
+    "Name": "Helska"
+  },
+  {
+    "StreetGUS": "06607",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Henrykowska",
+    "ShortName": "Henrykowska",
+    "GAID": 898288,
+    "OwnerGAID": 119431,
+    "Name": "Henrykowska"
+  },
+  {
+    "StreetGUS": "06626",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Hermanowska",
+    "ShortName": "Hermanowska",
+    "GAID": 898289,
+    "OwnerGAID": 119431,
+    "Name": "Hermanowska"
+  },
+  {
+    "StreetGUS": "06637",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Hetmańska",
+    "ShortName": "Hetmańska",
+    "GAID": 897739,
+    "OwnerGAID": 119431,
+    "Name": "Hetmańska"
+  },
+  {
+    "StreetGUS": "06659",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Himalajska",
+    "ShortName": "Himalajska",
+    "GAID": 898024,
+    "OwnerGAID": 119431,
+    "Name": "Himalajska"
+  },
+  {
+    "StreetGUS": "06669",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Hiszpańska",
+    "ShortName": "Hiszpańska",
+    "GAID": 898025,
+    "OwnerGAID": 119431,
+    "Name": "Hiszpańska"
+  },
+  {
+    "StreetGUS": "06697",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Holenderska",
+    "ShortName": "Holenderska",
+    "GAID": 898290,
+    "OwnerGAID": 119431,
+    "Name": "Holenderska"
+  },
+  {
+    "StreetGUS": "06787",
+    "Prefix": "ul.",
+    "PostFix": null,
+    "FullName": "ul. Hubska",
+    "ShortName": "Hubska",
+    "GAID": 897008,
+    "OwnerGAID": 119431,
+    "Name": "Hubska"
+  }
+]

@@ -54,12 +54,20 @@ For each configuration entry, the integration creates 4 sensors and 1 calendar. 
 1. Go to **Configuration** → **Integrations**
 2. Click **Add Integration**
 3. Search for "Tauron Power Outages"
-4. Enter your address details:
-   - **City GAID**: The city identifier from Tauron's system
-   - **Street GAID**: The street identifier from Tauron's system  
-   - **House Number**: Your house number
-   - **Name**: A friendly name for the integration
-   - (Optional) **Locality**: The place whose outages are yours, e.g. "Ogrodnica"
+4. Find your address in Tauron's register, the same way as on Tauron's outage page:
+   - **City**: type at least 3 letters of your city, town or village (with Polish letters, e.g. "Wrocław") and pick it from the matches. Each match shows its commune (gm.), district (pow.) and province. A single match is picked for you.
+   - **Street**: the search is pre-filled with the city's name. In a village without named streets just press Submit and pick "<village> (no street)". In a town, type any part of your street's name (e.g. "Legn" for "ul. Legnicka") and pick it.
+   - More than 20 matches? Type more of the name.
+5. Enter the remaining details:
+   - **House number**
+   - **Name**: names the device and starts its entity IDs (e.g. `calendar.ogrodnica_outages`). Pre-filled with the city's name.
+   - **Locality** (optional): the place whose outages are yours. Pre-filled with the city's name.
+
+The integration checks Tauron's outage feed for the chosen address before creating the entry. The device page and the Options dialog show the address being watched, e.g. "Ogrodnica 12, gm. Środa Śląska" or "Wrocław, ul. Legnicka 1".
+
+### Upgrading from a version where you typed GAID codes
+
+Entries created before address search show "Migration failed". Remove the entry and add it again by searching for your address.
 
 ### Upgrading from a version with "Local" or "Filtered" entities
 
@@ -70,19 +78,6 @@ Remove the integration and add it again. This creates the single set of entities
 - Tauron's feed covers a group of neighbouring addresses, so it often lists outages in nearby localities too. The entities show only outages whose message contains your Locality (case-insensitive substring match).
 - An empty Locality means every outage in the feed counts as yours.
 - The Locality and the update interval can be changed under **Configure** (Options) at any time. Changes apply immediately, without a restart and without a new request to Tauron. Clearing the Locality really clears it.
-
-### Finding GAID Values
-
-To find your GAID values, you can:
-
-1. Use your browser's developer tools on the Tauron website
-2. Look for network requests when searching for your address
-3. Extract the `cityGAID` and `streetGAID` from the API calls
-
-For example:
-- `cityGAID`: "123456"
-- `streetGAID`: "654321"
-- `houseNo`: "1"
 
 ## Usage Examples
 
@@ -150,7 +145,7 @@ The integration polls the Tauron API every 30 minutes by default. It fetches out
 
 ### Common Issues
 
-1. **Cannot connect error**: Verify your GAID values are correct
+1. **Cannot connect error**: Tauron's website may be down; try again later. If it persists, check the house number
 2. **No data**: Check if Tauron's API is accessible from your network
 3. **Parsing errors**: The integration handles various datetime formats but may need updates for new API responses
 
