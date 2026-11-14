@@ -14,6 +14,8 @@ from tauron_outages.outage_feed_source import OutageFeedSource, OutageFeedError
 
 from conftest import ADDRESS
 
+pytestmark = pytest.mark.usefixtures("socket_enabled")
+
 PARAMS = {
     "cityGAID": "111",
     "streetGAID": "222",
@@ -43,12 +45,15 @@ def server():
             pass
 
     httpd = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+    httpd.daemon_threads = False
     thread = threading.Thread(target=httpd.serve_forever, args=(0.01,), daemon=True)
     thread.start()
     state["url"] = f"http://127.0.0.1:{httpd.server_address[1]}/waapi/outages/address"
     yield state
     httpd.shutdown()
     httpd.server_close()
+    thread.join(timeout=5)
+    assert not thread.is_alive()
 
 
 def call(server, timeout=5):

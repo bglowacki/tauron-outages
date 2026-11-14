@@ -15,7 +15,9 @@ mise install          # Install Python + uv via mise
 uv sync               # Install dependencies
 ```
 
-Tests: `uv run pytest`. They cover `outage_schedule.py` and `outage_feed_source.py` (pure Python), the aiohttp transport (against a local HTTP server), and the coordinator's transition timer (real HA core, fake API and clock), using `tests/fixtures/`.
+Tests: `uv run pytest`. They cover `outage_schedule.py` and `outage_feed_source.py` (pure Python), the aiohttp transport (against a local HTTP server), the coordinator's transition timer (real HA core, fake API and clock), and the whole integration in a test HA instance (`tests/test_integration.py`: config/options flows, v1 migration, entity states, calendar trigger, unload; network stubbed with `aioclient_mock`, time with `freezer`), using `tests/fixtures/`.
+
+`pytest-homeassistant-custom-component` lags HA releases: `[tool.uv] override-dependencies` pins the test HA to 2026.11.1 in place of the plugin's own pin, `tests/conftest.py` loads it (its entry point is disabled) after shimming HA internals it imports, and `-p homeassistant.const` imports HA before respx so HA can alias `httpx` to `httpx2`. When bumping HA, update the override; drop the shim and override once a plugin release pins that HA version. Tests that open sockets need the `socket_enabled` fixture.
 
 This runs inside Home Assistant — copy `custom_components/tauron_outages/` into HA's `custom_components/` directory.
 

@@ -8,12 +8,18 @@ from zoneinfo import ZoneInfo
 
 import pytest
 
+from homeassistant.components import logger
+from homeassistant.components.logger import helpers
 from homeassistant.core import HomeAssistant
 from homeassistant.util import dt as dt_util
 
 import tauron_outages
 from tauron_outages import TauronDataUpdateCoordinator
 from tauron_outages.outage_feed_source import Address, OutageFeedSource
+
+logger._clear_logger_overwrites = helpers._clear_logger_overwrites
+
+pytest_plugins = ["pytest_homeassistant_custom_component.plugins"]
 
 UTC = timezone.utc
 ADDRESS = Address(city_gaid="111", street_gaid="222", house_no="12A")
