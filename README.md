@@ -1,0 +1,208 @@
+# Tauron Power Outages - Home Assistant Integration
+
+A custom Home Assistant integration that monitors power outages from Tauron Dystrybucja (Polish power distribution company).
+
+## Features
+
+- **Real-time outage status**: Know if there's currently an active power outage
+- **Next outage prediction**: Get information about upcoming planned outages
+- **Outage count**: Track the number of outages in the next 7 days
+- **Detailed attributes & items**: Access additional information like outage reasons, start/end times, and a normalized list of outages
+- **Optional filtering**: Narrow results by outage type and/or message content to focus on what matters to you; creates a second group of filtered sensors
+
+## Entities
+
+For each configuration entry, the integration creates the following sensors and a calendar. The "Filtered" group is created only if you configure filters (see Configuration below).
+
+1. **Outage Status** (`sensor.tauron_outage_status`)
+   - State: "Active" or "Inactive"
+   - Attributes: Next outage details, total outages count
+
+2. **Next Outage** (`sensor.tauron_next_outage`)
+   - State: Timestamp of next outage (or None)
+   - Device Class: timestamp
+   - Attributes: End time, reason, type
+
+3. **Outage Count** (`sensor.tauron_outage_count`)
+   - State: Number of outages in next 7 days
+   - Attributes: Active outages, upcoming outages
+
+4. **Outage Items** (`sensor.tauron_outage_items`)
+   - State: Same as outage count (number of outages)
+   - Attributes: `outages` list (normalized dicts with outageId, startDate, endDate, message, type, isActive, modified), convenience flags `has_active`, `has_upcoming`
+
+Filtered group (only if filters configured):
+
+5. **Filtered Next Outage** (`sensor.tauron_filtered_next_outage`)
+   - State: Timestamp of next outage among filtered results (or None)
+   - Device Class: timestamp
+   - Attributes: End time, reason, type
+
+6. **Filtered Outage Count** (`sensor.tauron_filtered_outage_count`)
+   - State: Number of outages matching filters
+   - Attributes: Active outages, upcoming outages, `is_active` flag
+
+7. **Filtered Outage Items** (`sensor.tauron_filtered_outage_items`)
+   - State: Same as filtered outage count
+   - Attributes: `outages` list with same normalization as above, plus `has_active`, `has_upcoming`
+
+8. **Outages Calendar** (`calendar.<your_name>_outages`)
+   - Created automatically; no manual platform entry needed.
+   - Name: Based on your configured Name (CONF_NAME), e.g. "My Home Outages".
+   - Current event shows the next outage; the calendar view lists all outages overlapping the selected range.
+
+## Installation
+
+### HACS (Recommended)
+
+1. Add this repository to HACS as a custom repository
+2. Install "Tauron Power Outages" through HACS
+3. Restart Home Assistant
+
+### Manual Installation
+
+1. Copy the `custom_components/tauron_outages` folder to your Home Assistant `custom_components` directory
+2. Restart Home Assistant
+
+## Configuration
+
+1. Go to **Configuration** → **Integrations**
+2. Click **Add Integration**
+3. Search for "Tauron Power Outages"
+4. Enter your address details:
+   - **City GAID**: The city identifier from Tauron's system
+   - **Street GAID**: The street identifier from Tauron's system  
+   - **House Number**: Your house number
+   - **Name**: A friendly name for the integration
+   - (Optional) **Filter by type**: Only include outages where the type matches exactly (string compare)
+   - (Optional) **Filter by message contains**: Only include outages whose message/description contains this text (case-insensitive)
+
+### Filtering behavior
+
+- If you provide at least one filter, the integration still fetches all outages but also computes a filtered subset.
+- Three additional sensors are created for the filtered subset: `sensor.tauron_filtered_next_outage`, `sensor.tauron_filtered_outage_count`, `sensor.tauron_filtered_outage_items`.
+- Matching rules:
+  - Type is compared as a string for robustness (e.g., "1" equals 1). Comparison is case-insensitive for alphabetic values, but it is an exact equality check overall.
+  - Message filter does a case-insensitive substring check across fields: message/Message/reason/description/Description.
+- If no outages match, filtered count is 0 and filtered next outage is unavailable.
+
+### Finding GAID Values
+
+To find your GAID values, you can:
+
+1. Use your browser's developer tools on the Tauron website
+2. Look for network requests when searching for your address
+3. Extract the `cityGAID` and `streetGAID` from the API calls
+
+For example:
+- `cityGAID`: "123456"
+- `streetGAID`: "654321"
+- `houseNo`: "1"
+
+## Usage Examples
+
+### Automations
+
+```yaml
+# Notify when an outage becomes active
+- alias: "Power Outage Alert"
+  trigger:
+    - platform: state
+      entity_id: sensor.tauron_outage_status
+      to: "Active"
+  action:
+    - service: notify.mobile_app_phone
+      data:
+        message: "Power outage is now active at your address!"
+
+# Prepare for upcoming outage
+- alias: "Upcoming Outage Warning"
+  trigger:
+    - platform: state
+      entity_id: sensor.tauron_next_outage
+  condition:
+    - condition: template
+      value_template: >
+        {{ (as_timestamp(states('sensor.tauron_next_outage')) - now().timestamp()) < 3600 }}
+  action:
+    - service: notify.mobile_app_phone
+      data:
+        message: "Power outage starts in less than 1 hour!"
+```
+
+### Lovelace Cards
+
+```yaml
+# Simple status card
+type: entity
+entity: sensor.tauron_outage_status
+```
+
+```yaml
+# Detailed outage information
+type: entities
+entities:
+  - sensor.tauron_outage_status
+  - sensor.tauron_next_outage
+  - sensor.tauron_outage_count
+  - sensor.tauron_outage_items
+```
+
+#### Filtered examples (only if filters configured)
+
+```yaml
+# Filtered sensors card
+type: entities
+entities:
+  - sensor.tauron_filtered_outage_count
+  - sensor.tauron_filtered_next_outage
+  - sensor.tauron_filtered_outage_items
+```
+
+#### Calendar Card
+
+```yaml
+# Show outages calendar (auto-created)
+type: calendar
+entities:
+  - calendar.my_home_outages
+```
+
+## API Details
+
+The integration polls the Tauron API every 30 minutes by default. It fetches outage data for the next 7 days and processes it to provide meaningful sensor states and attributes.
+
+## Troubleshooting
+
+### Common Issues
+
+1. **Cannot connect error**: Verify your GAID values are correct
+2. **No data**: Check if Tauron's API is accessible from your network
+3. **Parsing errors**: The integration handles various datetime formats but may need updates for new API responses
+
+### Debug Logging
+
+Add this to your `configuration.yaml` for debug logging:
+
+```yaml
+logger:
+  logs:
+    custom_components.tauron_outages: debug
+```
+
+## Development
+
+To contribute or modify:
+
+1. Fork the repository
+2. Make your changes
+3. Test with your Home Assistant instance
+4. Submit a pull request
+
+## License
+
+This project is licensed under the MIT License.
+
+## Disclaimer
+
+This is an unofficial integration and is not affiliated with Tauron Dystrybucja. Use at your own risk.

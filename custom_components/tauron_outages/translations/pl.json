@@ -1,0 +1,49 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Tauron - Przerwy w dostawie prądu",
+        "description": "Skonfiguruj monitorowanie przerw w dostawie prądu Tauron dla Twojego adresu",
+        "data": {
+          "city_gaid": "GAID miasta",
+          "street_gaid": "GAID ulicy",
+          "house_no": "Numer domu",
+          "name": "Nazwa",
+          "filter_type": "Filtrowanie po typie (opcjonalnie)",
+          "filter_message": "Filtrowanie po treści komunikatu (opcjonalnie)"
+        },
+        "data_description": {
+          "city_gaid": "GAID miasta z systemu Tauron",
+          "street_gaid": "GAID ulicy z systemu Tauron",
+          "house_no": "Twój numer domu",
+          "name": "Przyjazna nazwa dla tej integracji",
+          "filter_type": "Uwzględnij tylko przerwy, których 'typ' odpowiada tej wartości",
+          "filter_message": "Uwzględnij tylko przerwy, których komunikat/opis zawiera ten tekst (bez rozróżniania wielkości liter)"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Nie udało się połączyć z API Tauron",
+      "invalid_auth": "Nieprawidłowe uwierzytelnienie",
+      "unknown": "Wystąpił nieoczekiwany błąd"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Opcje integracji Tauron - Przerwy w dostawie prądu",
+        "description": "Dostosuj filtry i interwał aktualizacji bez ponownego dodawania integracji.",
+        "data": {
+          "filter_type": "Filtrowanie po typie (opcjonalnie)",
+          "filter_message": "Filtrowanie po treści komunikatu (opcjonalnie)",
+          "update_interval_hours": "Interwał aktualizacji (godziny)"
+        },
+        "data_description": {
+          "filter_type": "Uwzględnij tylko przerwy, których 'typ' odpowiada tej wartości",
+          "filter_message": "Uwzględnij tylko przerwy, których komunikat/opis zawiera ten tekst (bez rozróżniania wielkości liter)",
+          "update_interval_hours": "Jak często odpytywać API Tauron. Minimum 1, domyślnie 4 godziny."
+        }
+      }
+    }
+  }
+}

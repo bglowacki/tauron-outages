@@ -1,0 +1,13 @@
+{
+  "domain": "tauron_outages",
+  "name": "Tauron Power Outages",
+  "codeowners": ["@bglowacki"],
+  "config_flow": true,
+  "dependencies": ["sensor", "calendar"],
+  "documentation": "https://github.com/bglowacki/tauron-outages",
+  "integration_type": "service",
+  "iot_class": "cloud_polling",
+  "issue_tracker": "https://github.com/bglowacki/tauron-outages/issues",
+  "platforms": ["sensor", "calendar"],
+  "version": "1.3.3"
+}

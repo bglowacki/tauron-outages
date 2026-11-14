@@ -1,0 +1,49 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Tauron Power Outages",
+        "description": "Configure Tauron power outage monitoring for your address",
+        "data": {
+          "city_gaid": "City GAID",
+          "street_gaid": "Street GAID",
+          "house_no": "House Number",
+          "name": "Name",
+          "filter_type": "Filter by type (optional)",
+          "filter_message": "Filter by message contains (optional)"
+        },
+        "data_description": {
+          "city_gaid": "The city GAID from Tauron's system",
+          "street_gaid": "The street GAID from Tauron's system",
+          "house_no": "Your house number",
+          "name": "Friendly name for this integration",
+          "filter_type": "Only include outages where 'type' matches this value",
+          "filter_message": "Only include outages whose message/description contains this text (case-insensitive)"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Failed to connect to Tauron API",
+      "invalid_auth": "Invalid authentication",
+      "unknown": "Unexpected error occurred"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Tauron Power Outages Options",
+        "description": "Adjust filter and update interval settings without re-adding the integration.",
+        "data": {
+          "filter_type": "Filter by type (optional)",
+          "filter_message": "Filter by message contains (optional)",
+          "update_interval_hours": "Update interval (hours)"
+        },
+        "data_description": {
+          "filter_type": "Only include outages where 'type' matches this value",
+          "filter_message": "Only include outages whose message/description contains this text (case-insensitive)",
+          "update_interval_hours": "How often to poll the Tauron API. Minimum 1, default 4 hours."
+        }
+      }
+    }
+  }
+}
