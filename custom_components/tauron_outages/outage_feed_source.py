@@ -1,7 +1,7 @@
-from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone, tzinfo
 from typing import Any, Awaitable, Callable
 
+from .address import Address
 from .outage_schedule import OutageSchedule
 
 WINDOW = timedelta(days=7)
@@ -14,13 +14,6 @@ class OutageFeedError(Exception):
 
 
 type Transport = Callable[[dict[str, str]], Awaitable[Any]]
-
-
-@dataclass(frozen=True, slots=True)
-class Address:
-    city_gaid: str
-    street_gaid: str
-    house_no: str
 
 
 class OutageFeedSource:

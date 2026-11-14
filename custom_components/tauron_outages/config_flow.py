@@ -14,18 +14,12 @@ from homeassistant.helpers.selector import (
 from homeassistant.helpers.translation import async_get_translations
 from homeassistant.util import dt as dt_util
 
-from . import address_label_of, address_search_for, outage_feed_source_for
+from . import address_search_for, outage_feed_source_for
+from .address import Address
 from .address_search import AddressSearchError, CityMatch, SearchRefused, StreetMatch
 from .const import (
-    CONF_CITY_GAID,
-    CONF_CITY_LABEL,
-    CONF_CITY_NAME,
-    CONF_COMMUNE,
-    CONF_HOUSE_NO,
     CONF_LOCALITY,
     CONF_NAME,
-    CONF_STREET_GAID,
-    CONF_STREET_LABEL,
     CONF_UPDATE_INTERVAL_HOURS,
     DEFAULT_UPDATE_INTERVAL_HOURS,
     DOMAIN,
@@ -36,6 +30,7 @@ _LOGGER = logging.getLogger(__name__)
 
 CITY = "city"
 STREET = "street"
+HOUSE_NO = "house_no"
 NO_STREET_KEY = f"component.{DOMAIN}.selector.street.options.no_street"
 
 
@@ -56,7 +51,7 @@ def _pick_schema(key: str, choices: list[SelectOptionDict]) -> vol.Schema:
 def _details_schema(city_name: str) -> vol.Schema:
     return vol.Schema(
         {
-            vol.Required(CONF_HOUSE_NO): str,
+            vol.Required(HOUSE_NO): str,
             vol.Required(CONF_NAME, description={"suggested_value": city_name}): str,
             vol.Optional(CONF_LOCALITY, description={"suggested_value": city_name}): str,
         }
@@ -175,28 +170,17 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         assert self._city is not None and self._street is not None
         errors: dict[str, str] = {}
         if user_input is not None:
-            data = {
-                CONF_CITY_GAID: self._city.gaid,
-                CONF_STREET_GAID: self._street.gaid,
-                CONF_HOUSE_NO: user_input[CONF_HOUSE_NO].strip(),
-                CONF_NAME: user_input[CONF_NAME],
-                CONF_CITY_NAME: self._city.name,
-                CONF_CITY_LABEL: self._city.label,
-                CONF_COMMUNE: self._city.commune,
-                CONF_STREET_LABEL: "" if self._street.unnamed else self._street.label,
-            }
-            await self.async_set_unique_id(
-                f"{data[CONF_CITY_GAID]}_{data[CONF_STREET_GAID]}_{data[CONF_HOUSE_NO]}"
-            )
+            address = Address.picked(self._city, self._street, user_input[HOUSE_NO])
+            await self.async_set_unique_id(address.unique_id)
             self._abort_if_unique_id_configured()
             try:
-                await outage_feed_source_for(self.hass, data).fetch(dt_util.utcnow())
+                await outage_feed_source_for(self.hass, address).fetch(dt_util.utcnow())
             except OutageFeedError:
                 errors["base"] = "cannot_connect"
             else:
                 return self.async_create_entry(
-                    title=data[CONF_NAME],
-                    data=data,
+                    title=user_input[CONF_NAME],
+                    data={**address.entry_data(), CONF_NAME: user_input[CONF_NAME]},
                     options={CONF_LOCALITY: user_input.get(CONF_LOCALITY, "")},
                 )
 
@@ -242,5 +226,5 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         return self.async_show_form(
             step_id="init",
             data_schema=schema,
-            description_placeholders={"address": address_label_of(self._entry.data)},
+            description_placeholders={"address": Address.from_entry_data(self._entry.data).label},
         )

@@ -15,14 +15,23 @@ from homeassistant.util import dt as dt_util
 
 import tauron_outages
 from tauron_outages import TauronDataUpdateCoordinator
-from tauron_outages.outage_feed_source import Address, OutageFeedSource
+from tauron_outages.address import Address
+from tauron_outages.outage_feed_source import OutageFeedSource
 
 logger._clear_logger_overwrites = helpers._clear_logger_overwrites
 
 pytest_plugins = ["pytest_homeassistant_custom_component.plugins"]
 
 UTC = timezone.utc
-ADDRESS = Address(city_gaid="111", street_gaid="222", house_no="12A")
+ADDRESS = Address(
+    city_gaid="111",
+    street_gaid="222",
+    house_no="12A",
+    city_name="Ogrodnica",
+    city_label="Ogrodnica (gm. Środa Śląska, pow. średzki, dolnośląskie)",
+    commune="Środa Śląska",
+    street_label="",
+)
 FIXTURE = Path(__file__).parent / "fixtures" / "feed_ogrodnica_chwalimierz.json"
 
 
