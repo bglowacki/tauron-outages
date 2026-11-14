@@ -30,7 +30,7 @@ All source lives in `custom_components/tauron_outages/`.
 - **Outage schedule** (`outage_schedule.py`): Pure Python, no `homeassistant` imports. Builds immutable `Outage`s from the feed (all key spellings, feed shapes and date formats live here only) and answers time questions for an explicit `now` (`active`, `upcoming`, `next`, `overlapping`, `next_transition`, `local(locality)`). Entities do no parsing and no key fallbacks; they query the schedule at read time.
 - **Platforms**: device info shared via `entity.py`; `sensor.py` (7 sensors: status, next outage, count, items + filtered variants) and `calendar.py` (2 calendars: all + filtered, sharing a base class).
 - **Config flow** (`config_flow.py`): UI-based setup using city/street GAID codes + house number + Locality. Address and name live in entry data; the Locality lives only in entry options. Options flow edits Locality and update interval and the update listener calls `TauronDataUpdateCoordinator.async_apply_options` only. Config entry migrations are pure functions in `migration.py`.
-- **Locality**: produces the "filtered" (Local) entities; an empty Locality means every outage is local.
+- **Locality**: decides which outages are Local; the `…_filtered_…` entities show Local outages until #8 removes the split; an empty Locality means every outage is local.
 
 ## Tools
 

@@ -45,10 +45,10 @@ class _BaseTauronOutagesCalendar(CoordinatorEntity[TauronDataUpdateCoordinator],
         *,
         name_suffix: str,
         unique_id_suffix: str,
-        filtered: bool,
+        local_only: bool,
     ) -> None:
         super().__init__(coordinator)
-        self._filtered = filtered
+        self._local_only = local_only
         base_name = config_entry.data.get(CONF_NAME, "Tauron")
         self._attr_name = f"{base_name} {name_suffix}".strip()
         self._attr_unique_id = f"{config_entry.entry_id}_{unique_id_suffix}"
@@ -59,7 +59,7 @@ class _BaseTauronOutagesCalendar(CoordinatorEntity[TauronDataUpdateCoordinator],
         data = self.coordinator.data
         if not data:
             return OutageSchedule()
-        return data.filtered if self._filtered else data.schedule
+        return data.local if self._local_only else data.schedule
 
     @property
     def event(self) -> CalendarEvent | None:
@@ -97,7 +97,7 @@ class TauronOutagesCalendar(_BaseTauronOutagesCalendar):
             config_entry,
             name_suffix="Outages",
             unique_id_suffix="calendar",
-            filtered=False,
+            local_only=False,
         )
 
 
@@ -109,5 +109,5 @@ class TauronOutagesFilteredCalendar(_BaseTauronOutagesCalendar):
             config_entry,
             name_suffix="Filtered Outages",
             unique_id_suffix="filtered_calendar",
-            filtered=True,
+            local_only=True,
         )

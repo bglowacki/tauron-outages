@@ -36,7 +36,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         house_no=entry.data[CONF_HOUSE_NO],
     )
 
-    locality, update_minutes = _settings(entry)
+    locality, update_minutes = _options_of(entry)
     coordinator = TauronDataUpdateCoordinator(
         hass, entry, api, update_minutes=update_minutes, locality=locality
     )
@@ -52,12 +52,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
 
 async def _async_options_updated(hass: HomeAssistant, entry: ConfigEntry) -> None:
-    locality, update_minutes = _settings(entry)
+    locality, update_minutes = _options_of(entry)
     coordinator: TauronDataUpdateCoordinator = hass.data[DOMAIN][entry.entry_id]
     coordinator.async_apply_options(locality=locality, update_minutes=update_minutes)
 
 
-def _settings(entry: ConfigEntry) -> tuple[str, int]:
+def _options_of(entry: ConfigEntry) -> tuple[str, int]:
     locality = entry.options.get(CONF_LOCALITY) or ""
     hours = entry.options.get(CONF_UPDATE_INTERVAL_HOURS) or DEFAULT_UPDATE_INTERVAL_HOURS
     return locality, int(hours) * 60
@@ -118,7 +118,7 @@ class TauronDataUpdateCoordinator(DataUpdateCoordinator):
             self.async_update_listeners()
 
     def _with_local_outages(self, schedule: OutageSchedule) -> "TauronData":
-        return TauronData(schedule=schedule, filtered=schedule.local(self._locality))
+        return TauronData(schedule=schedule, local=schedule.local(self._locality))
 
     @callback
     def async_start_transition_timer(self) -> CALLBACK_TYPE:
@@ -169,4 +169,4 @@ class TauronDataUpdateCoordinator(DataUpdateCoordinator):
 class TauronData:
 
     schedule: OutageSchedule
-    filtered: OutageSchedule
+    local: OutageSchedule

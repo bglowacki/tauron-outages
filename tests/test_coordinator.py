@@ -167,9 +167,9 @@ def messages(schedule) -> list[str]:
     return [o.message.split(",")[0] for o in schedule.all()]
 
 
-def test_locality_narrows_filtered_schedule(clock):
+def test_locality_narrows_local_schedule(clock):
     async def scenario(coordinator, api):
-        assert messages(coordinator.data.filtered) == ["Ogrodnica", "Ogrodnica"]
+        assert messages(coordinator.data.local) == ["Ogrodnica", "Ogrodnica"]
         assert coordinator.data.schedule.count == 6
 
     run(scenario, locality="Ogrodnica")
@@ -177,7 +177,7 @@ def test_locality_narrows_filtered_schedule(clock):
 
 def test_empty_locality_makes_every_outage_local(clock):
     async def scenario(coordinator, api):
-        assert coordinator.data.filtered.all() == coordinator.data.schedule.all()
+        assert coordinator.data.local.all() == coordinator.data.schedule.all()
 
     run(scenario, locality="")
 
@@ -186,7 +186,7 @@ def test_apply_options_changes_locality_without_fetching(clock):
     async def scenario(coordinator, api):
         seen = []
         coordinator.async_add_listener(
-            lambda: seen.append(messages(coordinator.data.filtered))
+            lambda: seen.append(messages(coordinator.data.local))
         )
         calls_before = api.calls
 
@@ -201,7 +201,7 @@ def test_apply_options_changes_locality_without_fetching(clock):
 def test_apply_options_clearing_locality_shows_every_outage(clock):
     async def scenario(coordinator, api):
         coordinator.async_apply_options(locality="", update_minutes=60 * 168)
-        assert coordinator.data.filtered.count == 6
+        assert coordinator.data.local.count == 6
 
     run(scenario, locality="Ogrodnica")
 
@@ -210,7 +210,7 @@ def test_apply_options_changes_poll_interval(clock):
     async def scenario(coordinator, api):
         coordinator.async_apply_options(locality="Ogrodnica", update_minutes=60)
         assert coordinator.update_interval == timedelta(hours=1)
-        assert coordinator.data.filtered.count == 2
+        assert coordinator.data.local.count == 2
 
     run(scenario, locality="Ogrodnica")
 
@@ -236,6 +236,6 @@ def test_apply_options_keeps_failed_poll_unavailable(clock):
         coordinator.async_apply_options(locality="", update_minutes=60 * 168)
 
         assert coordinator.last_update_success is False
-        assert coordinator.data.filtered.count == 6
+        assert coordinator.data.local.count == 6
 
     run(scenario, locality="Ogrodnica")
