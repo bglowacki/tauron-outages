@@ -12,26 +12,3 @@ CONF_CITY_NAME = "city_name"
 CONF_CITY_LABEL = "city_label"
 CONF_COMMUNE = "commune"
 CONF_STREET_LABEL = "street_label"
-
-SENSOR_TYPES = {
-    "outage_status": {
-        "name": "Outage Status",
-        "icon": "mdi:power-plug-off",
-        "device_class": None,
-    },
-    "next_outage": {
-        "name": "Next Outage",
-        "icon": "mdi:calendar-clock",
-        "device_class": "timestamp",
-    },
-    "outage_count": {
-        "name": "Outage Count",
-        "icon": "mdi:counter",
-        "device_class": None,
-    },
-    "outage_items": {
-        "name": "Outage Items",
-        "icon": "mdi:format-list-bulleted",
-        "device_class": None,
-    },
-}
