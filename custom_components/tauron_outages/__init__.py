@@ -1,5 +1,7 @@
 import logging
+from collections.abc import Mapping
 from datetime import timedelta
+from typing import Any
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
@@ -18,8 +20,9 @@ from .const import (
     DOMAIN,
 )
 from .migration import migrate_v1_to_v2
+from .http_transport import urllib_transport
+from .outage_feed_source import Address, OutageFeedSource, OutageFeedError
 from .outage_schedule import OutageSchedule
-from .tauron_api import TauronAPI, TauronAPIError
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -29,15 +32,9 @@ PLATFORMS: list[Platform] = [Platform.SENSOR, Platform.CALENDAR]
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     hass.data.setdefault(DOMAIN, {})
 
-    api = TauronAPI(
-        city_gaid=entry.data[CONF_CITY_GAID],
-        street_gaid=entry.data[CONF_STREET_GAID],
-        house_no=entry.data[CONF_HOUSE_NO],
-    )
-
     locality, update_minutes = _options_of(entry)
     coordinator = TauronDataUpdateCoordinator(
-        hass, entry, api, update_minutes=update_minutes, locality=locality
+        hass, entry, outage_feed_source_for(entry.data), update_minutes=update_minutes, locality=locality
     )
     await coordinator.async_config_entry_first_refresh()
 
@@ -54,6 +51,15 @@ async def _async_options_updated(hass: HomeAssistant, entry: ConfigEntry) -> Non
     locality, update_minutes = _options_of(entry)
     coordinator: TauronDataUpdateCoordinator = hass.data[DOMAIN][entry.entry_id]
     coordinator.async_apply_options(locality=locality, update_minutes=update_minutes)
+
+
+def outage_feed_source_for(data: Mapping[str, Any]) -> OutageFeedSource:
+    address = Address(
+        city_gaid=data[CONF_CITY_GAID],
+        street_gaid=data[CONF_STREET_GAID],
+        house_no=data[CONF_HOUSE_NO],
+    )
+    return OutageFeedSource(address, urllib_transport(), dt_util.get_default_time_zone())
 
 
 def _options_of(entry: ConfigEntry) -> tuple[str, int]:
@@ -87,12 +93,12 @@ class TauronDataUpdateCoordinator(DataUpdateCoordinator[OutageSchedule]):
         self,
         hass: HomeAssistant,
         entry: ConfigEntry | None,
-        api: TauronAPI,
+        source: OutageFeedSource,
         *,
         update_minutes: int,
         locality: str = "",
     ) -> None:
-        self.api = api
+        self.source = source
         self._locality = locality
         self._feed_schedule: OutageSchedule | None = None
         self._unsub_transition: CALLBACK_TYPE | None = None
@@ -153,9 +159,8 @@ class TauronDataUpdateCoordinator(DataUpdateCoordinator[OutageSchedule]):
 
     async def _async_update_data(self) -> OutageSchedule:
         try:
-            feed = await self.api.async_get_outages()
-        except TauronAPIError as err:
+            self._feed_schedule = await self.source.fetch(dt_util.utcnow())
+        except OutageFeedError as err:
             raise UpdateFailed(f"Error communicating with API: {err}") from err
 
-        self._feed_schedule = OutageSchedule.from_feed(feed, dt_util.get_default_time_zone())
         return self._feed_schedule.local(self._locality)

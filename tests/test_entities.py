@@ -23,7 +23,7 @@ async def setup_entities(coordinator):
 
 
 def test_one_set_of_entities_with_clean_ids_and_names(clock):
-    async def scenario(coordinator, api):
+    async def scenario(coordinator, transport):
         entities = await setup_entities(coordinator)
         assert {uid: e.name for uid, e in entities.items()} == {
             "abc_outage_status": "Ogrodnica Outage Status",
@@ -37,7 +37,7 @@ def test_one_set_of_entities_with_clean_ids_and_names(clock):
 
 
 def test_entities_show_only_local_outages(clock):
-    async def scenario(coordinator, api):
+    async def scenario(coordinator, transport):
         entities = await setup_entities(coordinator)
         assert entities["abc_outage_status"].extra_state_attributes["total_outages"] == 2
         assert entities["abc_next_outage"].native_value == utc(2026, 11, 19, 7)
@@ -53,7 +53,7 @@ def test_entities_show_only_local_outages(clock):
 
 
 def test_empty_locality_shows_every_outage(clock):
-    async def scenario(coordinator, api):
+    async def scenario(coordinator, transport):
         entities = await setup_entities(coordinator)
         assert entities["abc_outage_count"].native_value == 6
         assert entities["abc_next_outage"].native_value == utc(2026, 11, 17, 6)
@@ -62,7 +62,7 @@ def test_empty_locality_shows_every_outage(clock):
 
 
 def test_calendar_event_is_active_local_outage_then_next(clock):
-    async def scenario(coordinator, api):
+    async def scenario(coordinator, transport):
         entities = await setup_entities(coordinator)
         cal = entities["abc_calendar"]
         assert cal.event.start == utc(2026, 11, 19, 7)

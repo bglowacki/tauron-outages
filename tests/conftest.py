@@ -13,23 +13,15 @@ from homeassistant.util import dt as dt_util
 
 import tauron_outages
 from tauron_outages import TauronDataUpdateCoordinator
+from tauron_outages.outage_feed_source import Address, OutageFeedSource
 
 UTC = timezone.utc
+ADDRESS = Address(city_gaid="111", street_gaid="222", house_no="12A")
 FIXTURE = Path(__file__).parent / "fixtures" / "feed_ogrodnica_chwalimierz.json"
 
 
 def utc(*args: int) -> datetime:
     return datetime(*args, tzinfo=UTC)
-
-
-class FakeAPI:
-    def __init__(self, feed) -> None:
-        self.feed = feed
-        self.calls = 0
-
-    async def async_get_outages(self):
-        self.calls += 1
-        return self.feed
 
 
 class FakeClock:
@@ -71,16 +63,30 @@ def clock(monkeypatch) -> FakeClock:
 def run(scenario, feed=None, locality=None):
     async def main():
         hass = HomeAssistant(str(Path(__file__).parent))
-        api = FakeAPI(json.loads(FIXTURE.read_text()) if feed is None else feed)
+        transport = FixtureTransport(json.loads(FIXTURE.read_text()) if feed is None else feed)
+        source = OutageFeedSource(ADDRESS, transport, dt_util.get_default_time_zone())
         coordinator = TauronDataUpdateCoordinator(
-            hass, None, api, update_minutes=60 * 168, locality=locality
+            hass, None, source, update_minutes=60 * 168, locality=locality
         )
         await coordinator.async_refresh()
         try:
-            await scenario(coordinator, api)
+            await scenario(coordinator, transport)
         finally:
             await coordinator.async_shutdown()
             await hass.async_stop(force=True)
 
     asyncio.run(main())
 
+
+
+class FixtureTransport:
+    def __init__(self, payload=None, error: Exception | None = None) -> None:
+        self.payload = payload
+        self.error = error
+        self.requests: list[dict[str, str]] = []
+
+    async def __call__(self, params: dict[str, str]):
+        self.requests.append(dict(params))
+        if self.error is not None:
+            raise self.error
+        return self.payload
