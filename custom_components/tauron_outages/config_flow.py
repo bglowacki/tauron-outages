@@ -51,7 +51,7 @@ def _options_schema(locality: str, hours: int) -> vol.Schema:
 
 async def validate_input(hass: HomeAssistant, data: Dict[str, Any]) -> Dict[str, Any]:
     try:
-        await outage_feed_source_for(data).fetch(dt_util.utcnow())
+        await outage_feed_source_for(hass, data).fetch(dt_util.utcnow())
     except OutageFeedError as err:
         raise CannotConnect from err
     except Exception as err:

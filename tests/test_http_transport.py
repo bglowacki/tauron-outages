@@ -6,9 +6,10 @@ import time
 from datetime import datetime, timezone
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
+import aiohttp
 import pytest
 
-from tauron_outages.http_transport import BASE_URL, urllib_transport
+from tauron_outages.http_transport import BASE_URL, aiohttp_transport
 from tauron_outages.outage_feed_source import OutageFeedSource, OutageFeedError
 
 from conftest import ADDRESS
@@ -51,12 +52,20 @@ def server():
 
 
 def call(server, timeout=5):
-    return asyncio.run(urllib_transport(server["url"], timeout=timeout)(PARAMS))
+    async def main():
+        async with aiohttp.ClientSession() as session:
+            return await aiohttp_transport(session, server["url"], timeout=timeout)(PARAMS)
+
+    return asyncio.run(main())
 
 
 def fetch_through_feed(url, timeout=5):
-    feed = OutageFeedSource(ADDRESS, urllib_transport(url, timeout=timeout), timezone.utc)
-    return asyncio.run(feed.fetch(datetime(2026, 11, 14, tzinfo=timezone.utc)))
+    async def main():
+        async with aiohttp.ClientSession() as session:
+            feed = OutageFeedSource(ADDRESS, aiohttp_transport(session, url, timeout=timeout), timezone.utc)
+            return await feed.fetch(datetime(2026, 11, 14, tzinfo=timezone.utc))
+
+    return asyncio.run(main())
 
 
 def test_points_at_tauron_by_default():
@@ -103,3 +112,16 @@ def test_timeout_is_a_feed_error(server):
 def test_connection_refused_is_a_feed_error():
     with pytest.raises(OutageFeedError):
         fetch_through_feed("http://127.0.0.1:9/nothing", timeout=1)
+
+
+@pytest.mark.parametrize("status", [404, 500])
+def test_http_error_status_raises_even_with_a_json_body(server, status):
+    server["status"] = status
+
+    with pytest.raises(OSError):
+        call(server)
+
+
+def test_connection_failure_raises_os_error():
+    with pytest.raises(OSError):
+        call({"url": "http://127.0.0.1:9/nothing"}, timeout=1)

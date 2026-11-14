@@ -6,6 +6,7 @@ from typing import Any
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
 from homeassistant.core import CALLBACK_TYPE, HomeAssistant, callback
+from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.event import async_track_point_in_utc_time
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from homeassistant.util import dt as dt_util
@@ -20,7 +21,7 @@ from .const import (
     DOMAIN,
 )
 from .migration import migrate_v1_to_v2
-from .http_transport import urllib_transport
+from .http_transport import aiohttp_transport
 from .outage_feed_source import Address, OutageFeedSource, OutageFeedError
 from .outage_schedule import OutageSchedule
 
@@ -34,7 +35,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     locality, update_minutes = _options_of(entry)
     coordinator = TauronDataUpdateCoordinator(
-        hass, entry, outage_feed_source_for(entry.data), update_minutes=update_minutes, locality=locality
+        hass, entry, outage_feed_source_for(hass, entry.data), update_minutes=update_minutes, locality=locality
     )
     await coordinator.async_config_entry_first_refresh()
 
@@ -53,13 +54,15 @@ async def _async_options_updated(hass: HomeAssistant, entry: ConfigEntry) -> Non
     coordinator.async_apply_options(locality=locality, update_minutes=update_minutes)
 
 
-def outage_feed_source_for(data: Mapping[str, Any]) -> OutageFeedSource:
+def outage_feed_source_for(hass: HomeAssistant, data: Mapping[str, Any]) -> OutageFeedSource:
     address = Address(
         city_gaid=data[CONF_CITY_GAID],
         street_gaid=data[CONF_STREET_GAID],
         house_no=data[CONF_HOUSE_NO],
     )
-    return OutageFeedSource(address, urllib_transport(), dt_util.get_default_time_zone())
+    return OutageFeedSource(
+        address, aiohttp_transport(async_get_clientsession(hass)), dt_util.get_default_time_zone()
+    )
 
 
 def _options_of(entry: ConfigEntry) -> tuple[str, int]:
