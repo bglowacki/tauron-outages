@@ -13,7 +13,7 @@ from homeassistant.util import dt as dt_util
 from . import TauronDataUpdateCoordinator
 from .const import CONF_NAME, DOMAIN, SENSOR_TYPES
 from .entity import device_info
-from .outage_schedule import Outage, OutageSchedule
+from .outage_schedule import Outage
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -57,22 +57,13 @@ class TauronSensor(CoordinatorEntity[TauronDataUpdateCoordinator], SensorEntity)
         sensor_config: dict[str, Any],
     ) -> None:
         super().__init__(coordinator)
-        self._sensor_type = sensor_type
-        self._local_only = sensor_type.startswith("local_")
-        self._kind = sensor_type.removeprefix("local_")
+        self._kind = sensor_type
         self._attr_name = f"{config_entry.data.get(CONF_NAME, 'Tauron')} {sensor_config['name']}"
         self._attr_unique_id = f"{config_entry.entry_id}_{sensor_type}"
         self._attr_icon = sensor_config["icon"]
         self._attr_device_info = device_info(config_entry)
         if sensor_config.get("device_class"):
             self._attr_device_class = sensor_config["device_class"]
-
-    @property
-    def _schedule(self) -> OutageSchedule | None:
-        data = self.coordinator.data
-        if not data:
-            return None
-        return data.local if self._local_only else data.schedule
 
     async def async_added_to_hass(self) -> None:
         self._evaluate()
@@ -84,7 +75,7 @@ class TauronSensor(CoordinatorEntity[TauronDataUpdateCoordinator], SensorEntity)
         self.async_write_ha_state()
 
     def _evaluate(self) -> None:
-        schedule = self._schedule
+        schedule = self.coordinator.data
         if schedule is None:
             self._attr_native_value = None
             self._attr_extra_state_attributes = {}

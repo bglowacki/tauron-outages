@@ -1,5 +1,4 @@
 import logging
-from dataclasses import dataclass
 from datetime import timedelta
 
 from homeassistant.config_entries import ConfigEntry
@@ -82,7 +81,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     return unload_ok
 
 
-class TauronDataUpdateCoordinator(DataUpdateCoordinator):
+class TauronDataUpdateCoordinator(DataUpdateCoordinator[OutageSchedule]):
 
     def __init__(
         self,
@@ -95,6 +94,7 @@ class TauronDataUpdateCoordinator(DataUpdateCoordinator):
     ) -> None:
         self.api = api
         self._locality = locality
+        self._feed_schedule: OutageSchedule | None = None
         self._unsub_transition: CALLBACK_TYPE | None = None
 
         super().__init__(
@@ -113,12 +113,9 @@ class TauronDataUpdateCoordinator(DataUpdateCoordinator):
             self.update_interval = interval
             if self._listeners:
                 self._schedule_refresh()
-        if self.data is not None:
-            self.data = self._with_local_outages(self.data.schedule)
+        if self._feed_schedule is not None:
+            self.data = self._feed_schedule.local(self._locality)
             self.async_update_listeners()
-
-    def _with_local_outages(self, schedule: OutageSchedule) -> "TauronData":
-        return TauronData(schedule=schedule, local=schedule.local(self._locality))
 
     @callback
     def async_start_transition_timer(self) -> CALLBACK_TYPE:
@@ -135,9 +132,9 @@ class TauronDataUpdateCoordinator(DataUpdateCoordinator):
     @callback
     def _arm_transition(self) -> None:
         self._cancel_transition()
-        if not self.data:
+        if self.data is None:
             return
-        when = self.data.schedule.next_transition(dt_util.utcnow())
+        when = self.data.next_transition(dt_util.utcnow())
         if when is not None:
             self._unsub_transition = async_track_point_in_utc_time(
                 self.hass, self._on_transition, when
@@ -154,19 +151,11 @@ class TauronDataUpdateCoordinator(DataUpdateCoordinator):
         self._unsub_transition = None
         self.async_update_listeners()
 
-    async def _async_update_data(self) -> "TauronData":
+    async def _async_update_data(self) -> OutageSchedule:
         try:
             feed = await self.api.async_get_outages()
         except TauronAPIError as err:
             raise UpdateFailed(f"Error communicating with API: {err}") from err
 
-        return self._with_local_outages(
-            OutageSchedule.from_feed(feed, dt_util.get_default_time_zone())
-        )
-
-
-@dataclass(frozen=True, slots=True)
-class TauronData:
-
-    schedule: OutageSchedule
-    local: OutageSchedule
+        self._feed_schedule = OutageSchedule.from_feed(feed, dt_util.get_default_time_zone())
+        return self._feed_schedule.local(self._locality)

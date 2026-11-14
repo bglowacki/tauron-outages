@@ -30,19 +30,4 @@ SENSOR_TYPES = {
         "icon": "mdi:format-list-bulleted",
         "device_class": None,
     },
-    "local_next_outage": {
-        "name": "Local Next Outage",
-        "icon": "mdi:calendar-clock",
-        "device_class": "timestamp",
-    },
-    "local_outage_count": {
-        "name": "Local Outage Count",
-        "icon": "mdi:counter",
-        "device_class": None,
-    },
-    "local_outage_items": {
-        "name": "Local Outage Items",
-        "icon": "mdi:format-list-bulleted",
-        "device_class": None,
-    },
 }

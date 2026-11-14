@@ -1,89 +1,9 @@
 from __future__ import annotations
 
-import asyncio
-import json
-from datetime import datetime, timedelta, timezone
-from pathlib import Path
-from zoneinfo import ZoneInfo
+from datetime import timedelta
 
-import pytest
-
-from homeassistant.core import HomeAssistant
-from homeassistant.util import dt as dt_util
-
-import tauron_outages
-from tauron_outages import TauronDataUpdateCoordinator
+from conftest import run, utc
 from tauron_outages.tauron_api import TauronAPIError
-
-UTC = timezone.utc
-FIXTURE = Path(__file__).parent / "fixtures" / "feed_ogrodnica_chwalimierz.json"
-
-
-def utc(*args: int) -> datetime:
-    return datetime(*args, tzinfo=UTC)
-
-
-class FakeAPI:
-    def __init__(self, feed) -> None:
-        self.feed = feed
-        self.calls = 0
-
-    async def async_get_outages(self):
-        self.calls += 1
-        return self.feed
-
-
-class FakeClock:
-    def __init__(self, now: datetime) -> None:
-        self.now = now
-        self.timers: list[dict] = []
-
-    def track(self, hass, action, when):
-        timer = {"action": action, "when": when, "cancelled": False}
-        self.timers.append(timer)
-
-        def cancel() -> None:
-            timer["cancelled"] = True
-
-        return cancel
-
-    @property
-    def pending(self) -> list[dict]:
-        return [t for t in self.timers if not t["cancelled"] and not t.get("fired")]
-
-    def fire(self) -> None:
-        (timer,) = self.pending
-        self.now = timer["when"]
-        timer["fired"] = True
-        timer["action"](self.now)
-
-
-@pytest.fixture
-def clock(monkeypatch) -> FakeClock:
-    fake = FakeClock(utc(2026, 11, 14))
-    monkeypatch.setattr(tauron_outages, "async_track_point_in_utc_time", fake.track)
-    monkeypatch.setattr(tauron_outages.dt_util, "utcnow", lambda: fake.now)
-    previous_tz = dt_util.get_default_time_zone()
-    dt_util.set_default_time_zone(ZoneInfo("Europe/Warsaw"))
-    yield fake
-    dt_util.set_default_time_zone(previous_tz)
-
-
-def run(scenario, feed=None, locality=None):
-    async def main():
-        hass = HomeAssistant(str(Path(__file__).parent))
-        api = FakeAPI(json.loads(FIXTURE.read_text()) if feed is None else feed)
-        coordinator = TauronDataUpdateCoordinator(
-            hass, None, api, update_minutes=60 * 168, locality=locality
-        )
-        await coordinator.async_refresh()
-        try:
-            await scenario(coordinator, api)
-        finally:
-            await coordinator.async_shutdown()
-            await hass.async_stop(force=True)
-
-    asyncio.run(main())
 
 
 def test_arms_one_timer_at_next_boundary(clock):
@@ -99,7 +19,7 @@ def test_firing_notifies_listeners_rearms_and_does_not_fetch(clock):
         coordinator.async_start_transition_timer()
         seen = []
         coordinator.async_add_listener(
-            lambda: seen.append(coordinator.data.schedule.is_active(clock.now))
+            lambda: seen.append(coordinator.data.is_active(clock.now))
         )
         calls_before = api.calls
 
@@ -167,26 +87,44 @@ def messages(schedule) -> list[str]:
     return [o.message.split(",")[0] for o in schedule.all()]
 
 
-def test_locality_narrows_local_schedule(clock):
+def test_data_is_the_local_schedule(clock):
     async def scenario(coordinator, api):
-        assert messages(coordinator.data.local) == ["Ogrodnica", "Ogrodnica"]
-        assert coordinator.data.schedule.count == 6
+        assert messages(coordinator.data) == ["Ogrodnica", "Ogrodnica"]
 
     run(scenario, locality="Ogrodnica")
 
 
 def test_empty_locality_makes_every_outage_local(clock):
     async def scenario(coordinator, api):
-        assert coordinator.data.local.all() == coordinator.data.schedule.all()
+        assert coordinator.data.count == 6
 
     run(scenario, locality="")
+
+
+def test_timer_follows_local_outage_boundaries(clock):
+    async def scenario(coordinator, api):
+        coordinator.async_start_transition_timer()
+        assert [t["when"] for t in clock.pending] == [utc(2026, 11, 19, 7)]
+        clock.fire()
+        assert [t["when"] for t in clock.pending] == [utc(2026, 11, 19, 11)]
+
+    run(scenario, locality="Ogrodnica")
+
+
+def test_apply_options_rearms_timer_for_new_locality(clock):
+    async def scenario(coordinator, api):
+        coordinator.async_start_transition_timer()
+        coordinator.async_apply_options(locality="", update_minutes=60 * 168)
+        assert [t["when"] for t in clock.pending] == [utc(2026, 11, 17, 6)]
+
+    run(scenario, locality="Ogrodnica")
 
 
 def test_apply_options_changes_locality_without_fetching(clock):
     async def scenario(coordinator, api):
         seen = []
         coordinator.async_add_listener(
-            lambda: seen.append(messages(coordinator.data.local))
+            lambda: seen.append(messages(coordinator.data))
         )
         calls_before = api.calls
 
@@ -201,7 +139,7 @@ def test_apply_options_changes_locality_without_fetching(clock):
 def test_apply_options_clearing_locality_shows_every_outage(clock):
     async def scenario(coordinator, api):
         coordinator.async_apply_options(locality="", update_minutes=60 * 168)
-        assert coordinator.data.local.count == 6
+        assert coordinator.data.count == 6
 
     run(scenario, locality="Ogrodnica")
 
@@ -210,16 +148,7 @@ def test_apply_options_changes_poll_interval(clock):
     async def scenario(coordinator, api):
         coordinator.async_apply_options(locality="Ogrodnica", update_minutes=60)
         assert coordinator.update_interval == timedelta(hours=1)
-        assert coordinator.data.local.count == 2
-
-    run(scenario, locality="Ogrodnica")
-
-
-def test_apply_options_keeps_transition_timer_armed(clock):
-    async def scenario(coordinator, api):
-        coordinator.async_start_transition_timer()
-        coordinator.async_apply_options(locality="", update_minutes=60 * 168)
-        assert [t["when"] for t in clock.pending] == [utc(2026, 11, 17, 6)]
+        assert coordinator.data.count == 2
 
     run(scenario, locality="Ogrodnica")
 
@@ -236,6 +165,6 @@ def test_apply_options_keeps_failed_poll_unavailable(clock):
         coordinator.async_apply_options(locality="", update_minutes=60 * 168)
 
         assert coordinator.last_update_success is False
-        assert coordinator.data.local.count == 6
+        assert coordinator.data.count == 6
 
     run(scenario, locality="Ogrodnica")
