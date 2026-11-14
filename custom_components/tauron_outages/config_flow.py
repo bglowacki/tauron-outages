@@ -18,7 +18,11 @@ from .const import (
     DEFAULT_UPDATE_INTERVAL_HOURS,
     DOMAIN,
 )
-from .tauron_api import TauronAPI, TauronAPIError
+from homeassistant.util import dt as dt_util
+
+from . import address_of
+from .http_transport import urllib_transport
+from .outage_feed import OutageFeed, OutageFeedError
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -47,15 +51,11 @@ def _options_schema(locality: str, hours: int) -> vol.Schema:
 
 
 async def validate_input(hass: HomeAssistant, data: Dict[str, Any]) -> Dict[str, Any]:
-    api = TauronAPI(
-        city_gaid=data[CONF_CITY_GAID],
-        street_gaid=data[CONF_STREET_GAID],
-        house_no=data[CONF_HOUSE_NO]
-    )
+    feed = OutageFeed(address_of(data), urllib_transport(), dt_util.get_default_time_zone())
 
     try:
-        await api.async_get_outages()
-    except TauronAPIError as err:
+        await feed.fetch(dt_util.utcnow())
+    except OutageFeedError as err:
         raise CannotConnect from err
     except Exception as err:
         _LOGGER.exception("Unexpected exception")
