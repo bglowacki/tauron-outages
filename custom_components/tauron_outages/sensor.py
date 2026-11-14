@@ -1,22 +1,23 @@
-"""Sensor platform for Tauron Power Outages."""
-from datetime import datetime
-import logging
-from homeassistant.util import dt as dt_util
-from typing import Any, Dict, Optional
+from __future__ import annotations
 
-from homeassistant.components.sensor import (
-    SensorEntity,
-    SensorEntityDescription,
-)
+import logging
+from typing import Any
+
+from homeassistant.components.sensor import SensorEntity
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
+from homeassistant.util import dt as dt_util
 
 from . import TauronDataUpdateCoordinator
-from .const import DOMAIN, SENSOR_TYPES, CONF_NAME, CONF_FILTER_TYPE, CONF_FILTER_MESSAGE
+from .const import CONF_NAME, DOMAIN, SENSOR_TYPES
+from .entity import device_info
+from .outage_schedule import Outage, OutageSchedule
 
 _LOGGER = logging.getLogger(__name__)
+
+UNKNOWN = "Unknown"
 
 
 async def async_setup_entry(
@@ -24,252 +25,107 @@ async def async_setup_entry(
     config_entry: ConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
-    """Set up the Tauron sensor platform."""
     coordinator = hass.data[DOMAIN][config_entry.entry_id]
-
-    entities = []
-    for sensor_type, sensor_config in SENSOR_TYPES.items():
-        # Always add filtered sensors; they will reflect current options (may yield 0/empty when no filters configured)
-        entities.append(
-            TauronSensor(
-                coordinator,
-                config_entry,
-                sensor_type,
-                sensor_config,
-            )
-        )
-
-    async_add_entities(entities, False)
+    async_add_entities(
+        [
+            TauronSensor(coordinator, config_entry, sensor_type, sensor_config)
+            for sensor_type, sensor_config in SENSOR_TYPES.items()
+        ],
+        False,
+    )
 
 
-class TauronSensor(CoordinatorEntity, SensorEntity):
-    """Representation of a Tauron power outage sensor."""
+def _item(outage: Outage) -> dict[str, Any]:
+    return {
+        "outageId": outage.outage_id,
+        "startDate": outage.start_raw,
+        "endDate": outage.end_raw,
+        "message": outage.message,
+        "type": outage.type,
+        "isActive": outage.is_active_flag,
+        "modified": outage.modified,
+    }
+
+
+class TauronSensor(CoordinatorEntity[TauronDataUpdateCoordinator], SensorEntity):
 
     def __init__(
         self,
         coordinator: TauronDataUpdateCoordinator,
         config_entry: ConfigEntry,
         sensor_type: str,
-        sensor_config: Dict[str, Any],
+        sensor_config: dict[str, Any],
     ) -> None:
-        """Initialize the sensor."""
         super().__init__(coordinator)
-        
         self._sensor_type = sensor_type
-        self._config_entry = config_entry
+        self._filtered = sensor_type.startswith("filtered_")
+        self._kind = sensor_type.removeprefix("filtered_")
         self._attr_name = f"{config_entry.data.get(CONF_NAME, 'Tauron')} {sensor_config['name']}"
         self._attr_unique_id = f"{config_entry.entry_id}_{sensor_type}"
         self._attr_icon = sensor_config["icon"]
-        
+        self._attr_device_info = device_info(config_entry)
         if sensor_config.get("device_class"):
             self._attr_device_class = sensor_config["device_class"]
 
     @property
-    def device_info(self) -> Dict[str, Any]:
-        """Return device information."""
-        return {
-            "identifiers": {(DOMAIN, self._config_entry.entry_id)},
-            "name": self._config_entry.data.get(CONF_NAME, "Tauron Outages"),
-            "manufacturer": "Tauron Dystrybucja",
-            "model": "Power Outages",
-            "sw_version": "1.0.0",
-        }
-
-    @property
-    def native_value(self) -> Any:
-        """Return the state of the sensor."""
-        if not self.coordinator.data:
-            return None
-
+    def _schedule(self) -> OutageSchedule | None:
         data = self.coordinator.data
-        
-        if self._sensor_type == "outage_status":
-            return "Active" if data.get("is_active", False) else "Inactive"
-        
-        elif self._sensor_type == "next_outage":
-            next_outage = data.get("next_outage")
-            if next_outage and "parsed_start_time" in next_outage:
-                return next_outage["parsed_start_time"]
+        if not data:
             return None
-        
-        elif self._sensor_type == "outage_count":
-            return data.get("outage_count", 0)
-        
-        elif self._sensor_type == "outage_items":
-            # State = number of outages; details go into attributes
-            return data.get("outage_count", 0)
-        
-        elif self._sensor_type == "filtered_next_outage":
-            next_outage = data.get("filtered_next_outage")
-            if next_outage and "parsed_start_time" in next_outage:
-                return next_outage["parsed_start_time"]
-            return None
-        
-        elif self._sensor_type == "filtered_outage_count":
-            return data.get("filtered_outage_count", 0)
-        
-        elif self._sensor_type == "filtered_outage_items":
-            return data.get("filtered_outage_count", 0)
-        
-        return None
+        return data.filtered if self._filtered else data.schedule
 
-    @property
-    def extra_state_attributes(self) -> Dict[str, Any]:
-        """Return additional state attributes."""
-        if not self.coordinator.data:
-            return {}
+    async def async_added_to_hass(self) -> None:
+        self._evaluate()
+        await super().async_added_to_hass()
 
-        attributes = {}
-        data = self.coordinator.data
-        
-        if self._sensor_type == "outage_status":
-            attributes["is_active"] = data.get("is_active", False)
-            attributes["total_outages"] = data.get("outage_count", 0)
-            
-            # Add info about next outage
-            next_outage = data.get("next_outage")
+    @callback
+    def _handle_coordinator_update(self) -> None:
+        self._evaluate()
+        self.async_write_ha_state()
+
+    def _evaluate(self) -> None:
+        schedule = self._schedule
+        if schedule is None:
+            self._attr_native_value = None
+            self._attr_extra_state_attributes = {}
+            return
+        now = dt_util.utcnow()
+        value: Any = None
+        attributes: dict[str, Any] = {}
+
+        if self._kind == "outage_status":
+            is_active = schedule.is_active(now)
+            next_outage = schedule.next(now)
+            value = "Active" if is_active else "Inactive"
+            attributes["is_active"] = is_active
+            attributes["total_outages"] = schedule.count
             if next_outage:
-                attributes["next_outage_start"] = next_outage.get("startDate") or next_outage.get("start_date")
-                attributes["next_outage_end"] = next_outage.get("endDate") or next_outage.get("end_date")
-                attributes["next_outage_reason"] = (
-                    next_outage.get("reason")
-                    or next_outage.get("description")
-                    or next_outage.get("message")
-                    or next_outage.get("Message")
-                    or "Unknown"
-                )
-        
-        elif self._sensor_type == "next_outage":
-            next_outage = data.get("next_outage")
+                attributes["next_outage_start"] = next_outage.start_raw
+                attributes["next_outage_end"] = next_outage.end_raw
+                attributes["next_outage_reason"] = next_outage.message or UNKNOWN
+
+        elif self._kind == "next_outage":
+            next_outage = schedule.next(now)
             if next_outage:
-                attributes["end_time"] = next_outage.get("endDate") or next_outage.get("end_date")
-                attributes["reason"] = (
-                    next_outage.get("reason")
-                    or next_outage.get("description")
-                    or next_outage.get("message")
-                    or next_outage.get("Message")
-                    or "Unknown"
-                )
-                attributes["type"] = next_outage.get("type") or next_outage.get("TypeId") or "Unknown"
-        
-        elif self._sensor_type == "outage_count":
-            outages = data.get("outages", [])
-            if outages:
-                # Group outages by type or status
-                active_count = sum(1 for o in outages if self._is_outage_active_now(o))
-                upcoming_count = sum(1 for o in outages if self._is_outage_upcoming(o))
-                
-                attributes["active_outages"] = active_count
-                attributes["upcoming_outages"] = upcoming_count
-                attributes["is_active"] = data.get("is_active", False)
-        
-        elif self._sensor_type == "outage_items":
-            outages = data.get("outages", [])
-            # Provide a normalized list so UI templates can iterate reliably
-            def _norm(o: Dict[str, Any]) -> Dict[str, Any]:
-                return {
-                    "outageId": o.get("outageId") or o.get("OutageId"),
-                    "startDate": o.get("startDate") or o.get("start_date"),
-                    "endDate": o.get("endDate") or o.get("end_date"),
-                    "message": (
-                        o.get("message")
-                        or o.get("Message")
-                        or o.get("reason")
-                        or o.get("description")
-                        or o.get("Description")
-                    ),
-                    "type": o.get("type") or o.get("TypeId") or o.get("typeId"),
-                    "isActive": o.get("isActive") or o.get("IsActive"),
-                    "modified": o.get("modified") or o.get("Modified"),
-                }
+                value = next_outage.start
+                attributes["end_time"] = next_outage.end_raw
+                attributes["reason"] = next_outage.message or UNKNOWN
+                attributes["type"] = next_outage.type if next_outage.type is not None else UNKNOWN
 
-            attributes["outages"] = [_norm(o) for o in outages]
-            attributes["total_outages"] = data.get("outage_count", 0)
-            # Optional quick flags for convenience
-            attributes["has_active"] = any(self._is_outage_active_now(o) for o in outages)
-            attributes["has_upcoming"] = any(self._is_outage_upcoming(o) for o in outages)
-        
-        elif self._sensor_type == "filtered_outage_count":
-            outages = data.get("filtered_outages", [])
-            if outages:
-                active_count = sum(1 for o in outages if self._is_outage_active_now(o))
-                upcoming_count = sum(1 for o in outages if self._is_outage_upcoming(o))
-                attributes["active_outages"] = active_count
-                attributes["upcoming_outages"] = upcoming_count
-                attributes["is_active"] = any(self._is_outage_active_now(o) for o in outages)
-        
-        elif self._sensor_type == "filtered_next_outage":
-            next_outage = data.get("filtered_next_outage")
-            if next_outage:
-                attributes["end_time"] = next_outage.get("endDate") or next_outage.get("end_date")
-                attributes["reason"] = (
-                    next_outage.get("reason")
-                    or next_outage.get("description")
-                    or next_outage.get("message")
-                    or next_outage.get("Message")
-                    or "Unknown"
-                )
-                attributes["type"] = next_outage.get("type") or next_outage.get("TypeId") or "Unknown"
-        
-        elif self._sensor_type == "filtered_outage_items":
-            outages = data.get("filtered_outages", [])
-            def _norm(o: Dict[str, Any]) -> Dict[str, Any]:
-                return {
-                    "outageId": o.get("outageId") or o.get("OutageId"),
-                    "startDate": o.get("startDate") or o.get("start_date"),
-                    "endDate": o.get("endDate") or o.get("end_date"),
-                    "message": (
-                        o.get("message")
-                        or o.get("Message")
-                        or o.get("reason")
-                        or o.get("description")
-                        or o.get("Description")
-                    ),
-                    "type": o.get("type") or o.get("TypeId") or o.get("typeId"),
-                    "isActive": o.get("isActive") or o.get("IsActive"),
-                    "modified": o.get("modified") or o.get("Modified"),
-                }
-            attributes["outages"] = [_norm(o) for o in outages]
-            attributes["total_outages"] = data.get("filtered_outage_count", 0)
-            attributes["has_active"] = any(self._is_outage_active_now(o) for o in outages)
-            attributes["has_upcoming"] = any(self._is_outage_upcoming(o) for o in outages)
+        elif self._kind == "outage_count":
+            value = schedule.count
+            if schedule.count:
+                active = schedule.active(now)
+                attributes["active_outages"] = len(active)
+                attributes["upcoming_outages"] = len(schedule.upcoming(now))
+                attributes["is_active"] = bool(active)
 
-        return attributes
+        elif self._kind == "outage_items":
+            value = schedule.count
+            attributes["outages"] = [_item(o) for o in schedule.all()]
+            attributes["total_outages"] = schedule.count
+            attributes["has_active"] = schedule.is_active(now)
+            attributes["has_upcoming"] = schedule.next(now) is not None
 
-    def _is_outage_active_now(self, outage: Dict[str, Any]) -> bool:
-        """Check if an outage is currently active."""
-        try:
-            now = dt_util.utcnow()
-            start_time_str = outage.get('startDate') or outage.get('start_date')
-            end_time_str = outage.get('endDate') or outage.get('end_date')
-            
-            if not start_time_str or not end_time_str:
-                return False
-            
-            start_time = self.coordinator.api._parse_datetime(start_time_str)
-            end_time = self.coordinator.api._parse_datetime(end_time_str)
-            
-            if start_time and end_time:
-                return start_time <= now <= end_time
-        except (ValueError, TypeError):
-            pass
-        
-        return False
-
-    def _is_outage_upcoming(self, outage: Dict[str, Any]) -> bool:
-        """Check if an outage is upcoming."""
-        try:
-            now = dt_util.utcnow()
-            start_time_str = outage.get('startDate') or outage.get('start_date')
-            
-            if not start_time_str:
-                return False
-            
-            start_time = self.coordinator.api._parse_datetime(start_time_str)
-            
-            if start_time:
-                return start_time > now
-        except (ValueError, TypeError):
-            pass
-        
-        return False
+        self._attr_native_value = value
+        self._attr_extra_state_attributes = attributes

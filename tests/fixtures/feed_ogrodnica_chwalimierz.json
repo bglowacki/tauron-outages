@@ -1,0 +1,58 @@
+{
+  "OutageItems": [
+    {
+      "outageId": "a3c1f6e2-0b7d-4e8a-9c61-1d2f3e4a5b01",
+      "startDate": "2026-11-17T06:00:00Z",
+      "endDate": "2026-11-17T14:00:00Z",
+      "Message": "Chwalimierz, , Chwalimierz: Zabudowa w obrębie działek numer 107.",
+      "type": 1,
+      "isActive": false,
+      "modified": "2026-11-12T09:41:27.153Z"
+    },
+    {
+      "outageId": "a3c1f6e2-0b7d-4e8a-9c61-1d2f3e4a5b02",
+      "startDate": "2026-11-18T06:00:00Z",
+      "endDate": "2026-11-18T14:00:00Z",
+      "Message": "Chwalimierz,",
+      "type": 1,
+      "isActive": false,
+      "modified": "2026-11-12T09:42:03.870Z"
+    },
+    {
+      "outageId": "a3c1f6e2-0b7d-4e8a-9c61-1d2f3e4a5b03",
+      "startDate": "2026-11-19T07:00:00Z",
+      "endDate": "2026-11-19T11:00:00Z",
+      "Message": "Ogrodnica, Ogrodnica: numery domów 1-25.",
+      "type": 1,
+      "isActive": false,
+      "modified": "2026-11-12T10:05:11.402Z"
+    },
+    {
+      "outageId": "a3c1f6e2-0b7d-4e8a-9c61-1d2f3e4a5b04",
+      "startDate": "2026-11-19T07:00:00Z",
+      "endDate": "2026-11-19T15:00:00Z",
+      "Message": "Chwalimierz, , Chwalimierz: Zabudowa w obrębie działek numer 98, 99.",
+      "type": 1,
+      "isActive": false,
+      "modified": "2026-11-12T10:06:45.019Z"
+    },
+    {
+      "outageId": "a3c1f6e2-0b7d-4e8a-9c61-1d2f3e4a5b05",
+      "startDate": "2026-11-20T08:00:00Z",
+      "endDate": "2026-11-20T12:00:00Z",
+      "Message": "Ogrodnica,",
+      "type": 1,
+      "isActive": false,
+      "modified": "2026-11-13T07:15:58.660Z"
+    },
+    {
+      "outageId": "a3c1f6e2-0b7d-4e8a-9c61-1d2f3e4a5b06",
+      "startDate": "2026-11-20T08:00:00Z",
+      "endDate": "2026-11-20T13:00:00Z",
+      "Message": "Chwalimierz,",
+      "type": 1,
+      "isActive": false,
+      "modified": "2026-11-13T07:16:20.091Z"
+    }
+  ]
+}
