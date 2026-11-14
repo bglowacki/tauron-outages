@@ -32,7 +32,7 @@ class Outage:
     modified: Any = None
 
     def is_active(self, now: datetime) -> bool:
-        return self.start <= now <= self.end
+        return self.start <= now < self.end
 
     @property
     def uid(self) -> str:

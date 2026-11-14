@@ -36,6 +36,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     coordinator = TauronDataUpdateCoordinator(
         hass,
+        entry,
         api,
         update_minutes=update_minutes,
         filters={
@@ -97,7 +98,15 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
 class TauronDataUpdateCoordinator(DataUpdateCoordinator):
 
-    def __init__(self, hass: HomeAssistant, api: TauronAPI, *, update_minutes: int, filters: dict = None) -> None:
+    def __init__(
+        self,
+        hass: HomeAssistant,
+        entry: ConfigEntry | None,
+        api: TauronAPI,
+        *,
+        update_minutes: int,
+        filters: dict = None,
+    ) -> None:
         self.api = api
         self._filters = filters or {}
         self._unsub_transition: CALLBACK_TYPE | None = None
@@ -105,6 +114,7 @@ class TauronDataUpdateCoordinator(DataUpdateCoordinator):
         super().__init__(
             hass,
             _LOGGER,
+            config_entry=entry,
             name=DOMAIN,
             update_interval=timedelta(minutes=update_minutes),
         )
