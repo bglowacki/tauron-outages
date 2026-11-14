@@ -29,6 +29,8 @@ OGRODNICA = "118484"
 WROCLAW = "119431"
 OGRODNICA_STREET = "910691"
 LEGNICKA = "897490"
+OGRODNICA_LABEL = "Ogrodnica (gm. Środa Śląska, pow. średzki, Dolnośląskie)"
+WROCLAW_LABEL = "Wrocław (gm. Wrocław, pow. Wrocław, Dolnośląskie)"
 
 
 def recorded(name: str):
@@ -131,7 +133,7 @@ async def at_street_search(hass: HomeAssistant, city: str):
     if city == OGRODNICA:
         return await submit(hass, result, city="Ogrodnica")
     result = await submit(hass, result, city="Wrocł")
-    return await submit(hass, result, city=WROCLAW)
+    return await submit(hass, result, city=WROCLAW_LABEL)
 
 
 async def at_details(hass: HomeAssistant):
@@ -141,7 +143,7 @@ async def at_details(hass: HomeAssistant):
 async def at_legnicka(hass: HomeAssistant):
     result = await at_street_search(hass, WROCLAW)
     result = await submit(hass, result, street="Legn")
-    return await submit(hass, result, street=LEGNICKA)
+    return await submit(hass, result, street="ul. Legnicka")
 
 
 async def test_village_with_one_street_goes_straight_to_the_house_number(hass, register):
@@ -174,10 +176,13 @@ async def test_several_city_matches_are_picked_by_their_labels(hass, register):
     assert result["step_id"] == "pick_city"
     choices = options(result, "city")
     assert len(choices) == 17
-    assert choices[0] == (OGRODNICA, "Ogrodnica (gm. Środa Śląska, pow. średzki, Dolnośląskie)")
-    assert choices[1] == ("130920", "Ogrodniczki (gm. Supraśl, pow. białostocki, Podlaskie)")
+    assert choices[0] == (OGRODNICA_LABEL, OGRODNICA_LABEL)
+    assert choices[1] == (
+        "Ogrodniczki (gm. Supraśl, pow. białostocki, Podlaskie)",
+        "Ogrodniczki (gm. Supraśl, pow. białostocki, Podlaskie)",
+    )
 
-    result = await submit(hass, result, city=OGRODNICA)
+    result = await submit(hass, result, city=OGRODNICA_LABEL)
 
     assert result["step_id"] == "details"
 
@@ -187,7 +192,6 @@ async def test_several_city_matches_are_picked_by_their_labels(hass, register):
     [
         (" Og ", "too_short"),
         ("Wroclaw", "no_matches"),
-        ("Wro", "too_many"),
     ],
 )
 async def test_city_search_errors_keep_what_was_typed(hass, register, text, error):
@@ -230,7 +234,6 @@ async def test_tauron_error_during_city_search_shows_cannot_connect_and_allows_r
     [
         ("Le", "too_short"),
         ("Qqqzz", "no_matches"),
-        ("ska", "too_many"),
     ],
 )
 async def test_street_search_errors_keep_what_was_typed(hass, register, text, error):
@@ -278,6 +281,101 @@ async def test_street_named_after_a_date_is_searched(hass, register, text):
     assert result["errors"] == {"base": "no_matches"}
 
 
+async def test_all_of_tauron_matches_are_offered_in_a_searchable_pick(hass, register):
+    result = await submit(hass, await start(hass), city="Wro")
+
+    assert result["step_id"] == "pick_city"
+    assert len(options(result, "city")) == 63
+    assert result["description_placeholders"]["count"] == "63"
+    _, selector = field(result, "city")
+    assert selector.config["custom_value"] is True
+
+    result = await submit(hass, result, city=WROCLAW_LABEL)
+    result = await submit(hass, result, street="ska")
+
+    assert result["step_id"] == "pick_street"
+    assert len(options(result, "street")) == 150
+    assert result["description_placeholders"]["count"] == "150"
+    _, selector = field(result, "street")
+    assert selector.config["custom_value"] is True
+
+
+async def test_text_typed_into_the_street_pick_searches_again(hass, register):
+    result = await at_street_search(hass, WROCLAW)
+    result = await submit(hass, result, street="ska")
+
+    result = await submit(hass, result, street="Legn")
+
+    assert result["step_id"] == "pick_street"
+    assert options(result, "street") == [("ul. Legnicka", "ul. Legnicka")]
+
+    result = await submit(hass, result, street="ul. Legnicka")
+
+    assert result["step_id"] == "details"
+    assert result["description_placeholders"]["street"] == "ul. Legnicka"
+
+
+@pytest.mark.parametrize(("text", "error"), [("Qqqzz", "no_matches"), ("Le", "too_short"), ("22a", "house_number")])
+async def test_failed_search_from_the_street_pick_keeps_the_list(hass, register, text, error):
+    result = await at_street_search(hass, WROCLAW)
+    result = await submit(hass, result, street="Legn")
+
+    result = await submit(hass, result, street=text)
+
+    assert result["step_id"] == "pick_street"
+    assert result["errors"] == {"base": error}
+    assert result["description_placeholders"]["query"] == text
+    assert options(result, "street") == [("ul. Legnicka", "ul. Legnicka")]
+
+
+async def test_streets_with_the_same_label_are_told_apart_by_gaid(hass, aioclient_mock):
+    polna = {"Prefix": "ul.", "FullName": "ul. Polna", "Name": "Polna"}
+    aioclient_mock.get(
+        STREETS_URL,
+        params={"partName": "Polna", "ownerGAID": WROCLAW},
+        json=[{**polna, "GAID": 1}, {**polna, "GAID": 2}, {**polna, "FullName": "ul. Polnej Róży", "GAID": 3}],
+    )
+    mock_register(aioclient_mock)
+    result = await at_street_search(hass, WROCLAW)
+
+    result = await submit(hass, result, street="Polna")
+
+    assert [value for value, _ in options(result, "street")] == [
+        "ul. Polna [1]",
+        "ul. Polna [2]",
+        "ul. Polnej Róży",
+    ]
+
+    result = await submit(hass, result, street="ul. Polna [2]")
+
+    assert result["step_id"] == "details"
+    aioclient_mock.get(
+        HOUSE_NUMBERS_URL, params={"partName": "5", "cityGAID": WROCLAW, "streetGAID": "2"}, json=["5"]
+    )
+    result = await submit(hass, result, house_no="5", name="Dom")
+    assert result["result"].data["street_gaid"] == "2"
+
+
+async def test_text_typed_into_the_city_pick_searches_again(hass, register):
+    result = await submit(hass, await start(hass), city="Ogrodn")
+
+    result = await submit(hass, result, city="Wroclaw")
+
+    assert result["step_id"] == "pick_city"
+    assert result["errors"] == {"base": "no_matches"}
+    assert len(options(result, "city")) == 17
+
+    result = await submit(hass, result, city="Wrocł")
+
+    assert result["step_id"] == "pick_city"
+    assert result["errors"] in (None, {})
+    assert (WROCLAW_LABEL, WROCLAW_LABEL) in options(result, "city")
+
+    result = await submit(hass, result, city="Ogrodnica")
+
+    assert result["step_id"] == "details"
+
+
 async def test_tauron_error_during_street_search_shows_cannot_connect(hass, register):
     result = await at_street_search(hass, WROCLAW)
     register.clear_requests()
@@ -297,7 +395,7 @@ async def test_village_unnamed_street_is_offered_even_as_the_only_match(
     result = await submit(hass, result, street="Ogrodnica")
 
     assert result["step_id"] == "pick_street"
-    assert options(result, "street") == [(OGRODNICA_STREET, "Ogrodnica (no street)")]
+    assert options(result, "street") == [("Ogrodnica (no street)", "Ogrodnica (no street)")]
 
 
 async def test_town_streets_are_shown_by_their_full_names(hass, register):
@@ -306,7 +404,7 @@ async def test_town_streets_are_shown_by_their_full_names(hass, register):
     result = await submit(hass, result, street="Legn")
 
     assert result["step_id"] == "pick_street"
-    assert options(result, "street") == [(LEGNICKA, "ul. Legnicka")]
+    assert options(result, "street") == [("ul. Legnicka", "ul. Legnicka")]
 
 
 async def test_town_street_without_prefix_is_not_taken_for_an_unnamed_street(hass, register):

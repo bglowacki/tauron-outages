@@ -7,7 +7,6 @@ from typing import Any
 from .outage_feed_source import Transport
 
 MIN_LENGTH = 3
-MAX_MATCHES = 20
 MAX_SUGGESTIONS = 10
 HOUSE_NUMBER = re.compile(r"\d+\s*[^\W\d_]?(\s*/\s*\d+\s*[^\W\d_]?)?")
 
@@ -19,7 +18,6 @@ class AddressSearchError(Exception):
 class Refusal(StrEnum):
     TOO_SHORT = "too_short"
     NO_MATCHES = "no_matches"
-    TOO_MANY = "too_many"
     HOUSE_NUMBER = "house_number"
     UNKNOWN_HOUSE_NUMBER = "unknown_house_number"
 
@@ -104,8 +102,6 @@ class AddressSearch:
         matches = _parsed(await self._ask(transport, params), parse)
         if not matches:
             raise SearchRefused(Refusal.NO_MATCHES)
-        if len(matches) > MAX_MATCHES:
-            raise SearchRefused(Refusal.TOO_MANY)
         return matches
 
 

@@ -1,4 +1,6 @@
 import logging
+from collections import Counter
+from collections.abc import Callable, Iterable
 from typing import Any
 
 import probatio as vol
@@ -44,14 +46,25 @@ def _search_schema(key: str, text: str) -> vol.Schema:
     return vol.Schema({vol.Required(key, description={"suggested_value": text}): str})
 
 
-def _pick_schema(key: str, choices: list[SelectOptionDict]) -> vol.Schema:
+def _pick_schema(key: str, labels: Iterable[str]) -> vol.Schema:
+    choices = [SelectOptionDict(value=label, label=label) for label in labels]
     return vol.Schema(
         {
             vol.Required(key): SelectSelector(
-                SelectSelectorConfig(options=choices, mode=SelectSelectorMode.DROPDOWN)
+                SelectSelectorConfig(
+                    options=choices, mode=SelectSelectorMode.DROPDOWN, custom_value=True
+                )
             )
         }
     )
+
+
+def _by_label[T](items: list[T], label: Callable[[T], str], gaid: Callable[[T], str]) -> dict[str, T]:
+    counts = Counter(label(item) for item in items)
+    return {
+        label(item) if counts[label(item)] == 1 else f"{label(item)} [{gaid(item)}]": item
+        for item in items
+    }
 
 
 def _details_schema(city_name: str) -> vol.Schema:
@@ -129,13 +142,26 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     async def async_step_pick_city(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
+        text = ""
+        errors: dict[str, str] = {}
         if user_input is not None:
-            return await self._city_picked(
-                next(c for c in self._cities if c.gaid == user_input[CITY])
-            )
+            text = user_input[CITY]
+            if city := self._city_choices().get(text):
+                return await self._city_picked(city)
+            try:
+                self._cities = await address_search_for(self.hass).cities(text)
+            except (SearchRefused, AddressSearchError) as err:
+                errors["base"] = _search_error(err)
+            else:
+                if len(self._cities) == 1:
+                    return await self._city_picked(self._cities[0])
 
-        choices = [SelectOptionDict(value=c.gaid, label=c.label) for c in self._cities]
-        return self.async_show_form(step_id="pick_city", data_schema=_pick_schema(CITY, choices))
+        return self.async_show_form(
+            step_id="pick_city",
+            data_schema=_pick_schema(CITY, self._city_choices()),
+            errors=errors,
+            description_placeholders={"query": text.strip(), "count": str(len(self._cities))},
+        )
 
     async def _city_picked(self, city: CityMatch) -> ConfigFlowResult:
         self._city = city
@@ -179,17 +205,28 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     async def async_step_pick_street(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
+        assert self._city is not None
+        text = ""
+        errors: dict[str, str] = {}
         if user_input is not None:
-            self._street = next(s for s in self._streets if s.gaid == user_input[STREET])
-            return await self.async_step_details()
+            text = user_input[STREET]
+            if street := (await self._street_choices()).get(text):
+                self._street = street
+                return await self.async_step_details()
+            try:
+                self._streets = await address_search_for(self.hass).streets(self._city, text)
+            except (SearchRefused, AddressSearchError) as err:
+                errors["base"] = _search_error(err)
 
-        no_street = await self._no_street_template()
-        choices = [
-            SelectOptionDict(value=s.gaid, label=_street_label(s, no_street))
-            for s in self._streets
-        ]
         return self.async_show_form(
-            step_id="pick_street", data_schema=_pick_schema(STREET, choices)
+            step_id="pick_street",
+            data_schema=_pick_schema(STREET, await self._street_choices()),
+            errors=errors,
+            description_placeholders={
+                "query": text.strip(),
+                "count": str(len(self._streets)),
+                "city_name": self._city.name,
+            },
         )
 
     async def async_step_details(
@@ -232,6 +269,15 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             ),
             errors=errors,
             description_placeholders=placeholders,
+        )
+
+    def _city_choices(self) -> dict[str, CityMatch]:
+        return _by_label(self._cities, lambda c: c.label, lambda c: c.gaid)
+
+    async def _street_choices(self) -> dict[str, StreetMatch]:
+        no_street = await self._no_street_template()
+        return _by_label(
+            self._streets, lambda s: _street_label(s, no_street), lambda s: s.gaid
         )
 
     async def _no_street_template(self) -> str:
