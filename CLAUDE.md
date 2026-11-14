@@ -42,6 +42,7 @@ All source lives in `custom_components/tauron_outages/`.
 - Translations in `translations/` (en + pl)
 - Integration metadata in `manifest.json` (domain: `tauron_outages`, iot_class: `cloud_polling`)
 - No YAML configuration — config flow only
+- No comments in code
 
 # context-mode — MANDATORY routing rules
 
