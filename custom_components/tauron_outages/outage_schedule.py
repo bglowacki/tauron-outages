@@ -34,6 +34,17 @@ class Outage:
     def is_active(self, now: datetime) -> bool:
         return self.start <= now < self.end
 
+    def as_feed_item(self) -> dict[str, Any]:
+        return {
+            "outageId": self.outage_id,
+            "startDate": self.start_raw,
+            "endDate": self.end_raw,
+            "message": self.message,
+            "type": self.type,
+            "isActive": self.is_active_flag,
+            "modified": self.modified,
+        }
+
     @property
     def uid(self) -> str:
         if self.outage_id not in (None, ""):
