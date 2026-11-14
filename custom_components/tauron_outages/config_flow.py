@@ -16,7 +16,13 @@ from homeassistant.util import dt as dt_util
 
 from . import address_search_for, outage_feed_source_for
 from .address import Address
-from .address_search import AddressSearchError, CityMatch, SearchRefused, StreetMatch
+from .address_search import (
+    AddressSearchError,
+    CityMatch,
+    Refusal,
+    SearchRefused,
+    StreetMatch,
+)
 from .const import (
     CONF_LOCALITY,
     CONF_NAME,
@@ -126,22 +132,28 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
         assert self._city is not None
-        text = self._city.name
+        text = suggestion = self._city.name
         errors: dict[str, str] = {}
         if user_input is not None:
-            text = user_input[STREET]
+            text = suggestion = user_input[STREET]
             try:
                 self._streets = await address_search_for(self.hass).streets(self._city, text)
             except (SearchRefused, AddressSearchError) as err:
                 errors["base"] = _search_error(err)
+                if isinstance(err, SearchRefused) and err.refusal is Refusal.HOUSE_NUMBER:
+                    suggestion = self._city.name
             else:
                 return await self.async_step_pick_street()
 
         return self.async_show_form(
             step_id="street",
-            data_schema=_search_schema(STREET, text),
+            data_schema=_search_schema(STREET, suggestion),
             errors=errors,
-            description_placeholders={"query": text.strip(), "city": self._city.label},
+            description_placeholders={
+                "query": text.strip(),
+                "city": self._city.label,
+                "city_name": self._city.name,
+            },
         )
 
     async def async_step_pick_street(

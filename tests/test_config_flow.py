@@ -189,6 +189,39 @@ async def test_street_search_errors_keep_what_was_typed(hass, register, text, er
     assert suggested(result, "street") == text
 
 
+@pytest.mark.parametrize("text", ["22a", " 22 ", "7/3", "15 B", "12a/4"])
+async def test_house_number_in_street_search_points_back_to_the_village_name(
+    hass, register, text
+):
+    result = await at_street_search(hass, OGRODNICA)
+    calls = register.call_count
+
+    result = await submit(hass, result, street=text)
+
+    assert register.call_count == calls
+    assert result["step_id"] == "street"
+    assert result["errors"] == {"base": "house_number"}
+    assert result["description_placeholders"]["query"] == text.strip()
+    assert result["description_placeholders"]["city_name"] == "Ogrodnica"
+    assert suggested(result, "street") == "Ogrodnica"
+
+    result = await submit(hass, result, street="Ogrodnica")
+
+    assert result["step_id"] == "pick_street"
+
+
+@pytest.mark.parametrize("text", ["3 Maja", "11 Listopada"])
+async def test_street_named_after_a_date_is_searched(hass, register, text):
+    register.get(STREETS_URL, params={"partName": text, "ownerGAID": WROCLAW}, json=[])
+    result = await at_street_search(hass, WROCLAW)
+    calls = register.call_count
+
+    result = await submit(hass, result, street=text)
+
+    assert register.call_count == calls + 1
+    assert result["errors"] == {"base": "no_matches"}
+
+
 async def test_tauron_error_during_street_search_shows_cannot_connect(hass, register):
     result = await at_street_search(hass, WROCLAW)
     register.clear_requests()

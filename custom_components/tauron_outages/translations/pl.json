@@ -53,7 +53,8 @@
       "cannot_connect": "Nie udało się połączyć z API Tauron",
       "too_short": "Wpisz co najmniej 3 znaki.",
       "no_matches": "Brak wyników dla „{query}”. Użyj polskich znaków, np. \"Wrocław\", a nie \"Wroclaw\".",
-      "too_many": "Ponad 20 wyników dla „{query}”. Wpisz więcej liter nazwy."
+      "too_many": "Ponad 20 wyników dla „{query}”. Wpisz więcej liter nazwy.",
+      "house_number": "„{query}” wygląda na numer domu — wpiszesz go w ostatnim kroku. Tutaj wpisz nazwę ulicy; we wsi bez nazw ulic zostaw „{city_name}” i kliknij Zatwierdź."
     },
     "abort": {
       "already_configured": "Ten adres jest już skonfigurowany."

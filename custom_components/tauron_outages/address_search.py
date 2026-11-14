@@ -1,3 +1,4 @@
+import re
 from collections.abc import Mapping
 from dataclasses import dataclass
 from enum import StrEnum
@@ -7,6 +8,7 @@ from .outage_feed_source import Transport
 
 MIN_LENGTH = 3
 MAX_MATCHES = 20
+HOUSE_NUMBER = re.compile(r"\d+\s*[^\W\d_]?(\s*/\s*\d+\s*[^\W\d_]?)?")
 
 
 class AddressSearchError(Exception):
@@ -17,6 +19,7 @@ class Refusal(StrEnum):
     TOO_SHORT = "too_short"
     NO_MATCHES = "no_matches"
     TOO_MANY = "too_many"
+    HOUSE_NUMBER = "house_number"
 
 
 class SearchRefused(Exception):
@@ -56,6 +59,8 @@ class AddressSearch:
         return await self._search(self._cities, {"partName": _query(text)}, _city)
 
     async def streets(self, city: CityMatch, text: str) -> list[StreetMatch]:
+        if HOUSE_NUMBER.fullmatch(text.strip()):
+            raise SearchRefused(Refusal.HOUSE_NUMBER)
         params = {"partName": _query(text), "ownerGAID": city.gaid}
         return await self._search(self._streets, params, lambda item: _street(city, item))
 
