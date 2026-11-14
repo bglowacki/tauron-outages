@@ -77,6 +77,16 @@ def _options_schema(locality: str, hours: int) -> vol.Schema:
     )
 
 
+def _street_label(street: StreetMatch, no_street: str) -> str:
+    return no_street.format(city=street.name) if street.unnamed else street.label
+
+
+def _house_number_error(err: SearchRefused) -> str:
+    if err.suggestions:
+        return "unknown_house_number"
+    return "house_number_not_found"
+
+
 def _search_error(err: Exception) -> str:
     if isinstance(err, SearchRefused):
         return err.refusal.value
@@ -92,7 +102,6 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         self._city: CityMatch | None = None
         self._streets: list[StreetMatch] = []
         self._street: StreetMatch | None = None
-        self._street_labels: dict[str, str] = {}
 
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None
@@ -107,8 +116,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 errors["base"] = _search_error(err)
             else:
                 if len(self._cities) == 1:
-                    self._city = self._cities[0]
-                    return await self.async_step_street()
+                    return await self._city_picked(self._cities[0])
                 return await self.async_step_pick_city()
 
         return self.async_show_form(
@@ -122,11 +130,23 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
         if user_input is not None:
-            self._city = next(c for c in self._cities if c.gaid == user_input[CITY])
-            return await self.async_step_street()
+            return await self._city_picked(
+                next(c for c in self._cities if c.gaid == user_input[CITY])
+            )
 
         choices = [SelectOptionDict(value=c.gaid, label=c.label) for c in self._cities]
         return self.async_show_form(step_id="pick_city", data_schema=_pick_schema(CITY, choices))
+
+    async def _city_picked(self, city: CityMatch) -> ConfigFlowResult:
+        self._city = city
+        try:
+            self._street = await address_search_for(self.hass).only_street(city)
+        except AddressSearchError as err:
+            _LOGGER.debug("Could not ask whether %s has one street: %s", city.label, err)
+            self._street = None
+        if self._street is None:
+            return await self.async_step_street()
+        return await self.async_step_details()
 
     async def async_step_street(
         self, user_input: dict[str, Any] | None = None
@@ -164,13 +184,9 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             return await self.async_step_details()
 
         no_street = await self._no_street_template()
-        self._street_labels = {
-            s.gaid: no_street.format(city=s.name) if s.unnamed else s.label
-            for s in self._streets
-        }
         choices = [
-            SelectOptionDict(value=gaid, label=label)
-            for gaid, label in self._street_labels.items()
+            SelectOptionDict(value=s.gaid, label=_street_label(s, no_street))
+            for s in self._streets
         ]
         return self.async_show_form(
             step_id="pick_street", data_schema=_pick_schema(STREET, choices)
@@ -181,13 +197,26 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     ) -> ConfigFlowResult:
         assert self._city is not None and self._street is not None
         errors: dict[str, str] = {}
+        placeholders = {
+            "city": self._city.label,
+            "street": _street_label(self._street, await self._no_street_template()),
+            "house_no": "",
+            "suggestions": "",
+        }
         if user_input is not None:
-            address = Address.picked(self._city, self._street, user_input[HOUSE_NO])
-            await self.async_set_unique_id(address.unique_id)
-            self._abort_if_unique_id_configured()
+            placeholders["house_no"] = user_input[HOUSE_NO].strip()
             try:
+                house_no = await address_search_for(self.hass).house_number(
+                    self._city, self._street, user_input[HOUSE_NO]
+                )
+                address = Address.picked(self._city, self._street, house_no)
+                await self.async_set_unique_id(address.unique_id)
+                self._abort_if_unique_id_configured()
                 await outage_feed_source_for(self.hass, address).fetch(dt_util.utcnow())
-            except OutageFeedError:
+            except SearchRefused as err:
+                errors["base"] = _house_number_error(err)
+                placeholders["suggestions"] = ", ".join(err.suggestions)
+            except (AddressSearchError, OutageFeedError):
                 errors["base"] = "cannot_connect"
             else:
                 return self.async_create_entry(
@@ -202,10 +231,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 _details_schema(self._city.name), user_input or {}
             ),
             errors=errors,
-            description_placeholders={
-                "city": self._city.label,
-                "street": self._street_labels[self._street.gaid],
-            },
+            description_placeholders=placeholders,
         )
 
     async def _no_street_template(self) -> str:

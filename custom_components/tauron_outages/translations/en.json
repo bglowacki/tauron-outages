@@ -54,7 +54,9 @@
       "too_short": "Type at least 3 characters.",
       "no_matches": "No matches for \"{query}\". Use Polish letters, e.g. \"Wrocław\", not \"Wroclaw\".",
       "too_many": "More than 20 matches for \"{query}\". Type more of the name.",
-      "house_number": "\"{query}\" looks like a house number — you'll enter it in the last step. Here, type the street's name; in a village without street names, leave \"{city_name}\" and click Submit."
+      "house_number": "\"{query}\" looks like a house number — you'll enter it in the last step. Here, type the street's name; in a village without street names, leave \"{city_name}\" and click Submit.",
+      "unknown_house_number": "Tauron doesn't know house number \"{house_no}\" at this address. Numbers containing \"{house_no}\": {suggestions}.",
+      "house_number_not_found": "Tauron doesn't know house number \"{house_no}\" at this address. Check it on Tauron's website."
     },
     "abort": {
       "already_configured": "This address is already configured."
