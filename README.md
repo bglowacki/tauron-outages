@@ -8,11 +8,11 @@ A custom Home Assistant integration that monitors power outages from Tauron Dyst
 - **Next outage prediction**: Get information about upcoming planned outages
 - **Outage count**: Track the number of outages in the next 7 days
 - **Detailed attributes & items**: Access additional information like outage reasons, start/end times, and a normalized list of outages
-- **Optional filtering**: Narrow results by outage type and/or message content to focus on what matters to you; creates a second group of filtered sensors
+- **Locality**: Narrow results to outages whose message names your Locality (e.g. "Ogrodnica"); the Local group of entities follows it
 
 ## Entities
 
-For each configuration entry, the integration creates the following sensors and a calendar. The "Filtered" group is created only if you configure filters (see Configuration below).
+For each configuration entry, the integration creates the following sensors and a calendar. The "Local" group follows the Locality (see Configuration below).
 
 1. **Outage Status** (`sensor.tauron_outage_status`)
    - State: "Active" or "Inactive"
@@ -31,19 +31,19 @@ For each configuration entry, the integration creates the following sensors and 
    - State: Same as outage count (number of outages)
    - Attributes: `outages` list (normalized dicts with outageId, startDate, endDate, message, type, isActive, modified), convenience flags `has_active`, `has_upcoming`
 
-Filtered group (only if filters configured):
+Local group (outages in your Locality):
 
-5. **Filtered Next Outage** (`sensor.tauron_filtered_next_outage`)
-   - State: Timestamp of next outage among filtered results (or None)
+5. **Local Next Outage** (`sensor.tauron_local_next_outage`)
+   - State: Timestamp of next outage among Local outages (or None)
    - Device Class: timestamp
    - Attributes: End time, reason, type
 
-6. **Filtered Outage Count** (`sensor.tauron_filtered_outage_count`)
+6. **Local Outage Count** (`sensor.tauron_local_outage_count`)
    - State: Number of outages matching filters
    - Attributes: Active outages, upcoming outages, `is_active` flag
 
-7. **Filtered Outage Items** (`sensor.tauron_filtered_outage_items`)
-   - State: Same as filtered outage count
+7. **Local Outage Items** (`sensor.tauron_local_outage_items`)
+   - State: Same as Local outage count
    - Attributes: `outages` list with same normalization as above, plus `has_active`, `has_upcoming`
 
 8. **Outages Calendar** (`calendar.<your_name>_outages`)
@@ -74,17 +74,13 @@ Filtered group (only if filters configured):
    - **Street GAID**: The street identifier from Tauron's system  
    - **House Number**: Your house number
    - **Name**: A friendly name for the integration
-   - (Optional) **Filter by type**: Only include outages where the type matches exactly (string compare)
-   - (Optional) **Filter by message contains**: Only include outages whose message/description contains this text (case-insensitive)
+   - (Optional) **Locality**: The place whose outages are yours, e.g. "Ogrodnica"
 
-### Filtering behavior
+### Locality
 
-- If you provide at least one filter, the integration still fetches all outages but also computes a filtered subset.
-- Three additional sensors are created for the filtered subset: `sensor.tauron_filtered_next_outage`, `sensor.tauron_filtered_outage_count`, `sensor.tauron_filtered_outage_items`.
-- Matching rules:
-  - Type is compared as a string for robustness (e.g., "1" equals 1). Comparison is case-insensitive for alphabetic values, but it is an exact equality check overall.
-  - Message filter does a case-insensitive substring check across fields: message/Message/reason/description/Description.
-- If no outages match, filtered count is 0 and filtered next outage is unavailable.
+- Tauron's feed covers a group of neighbouring addresses, so it often lists outages in nearby localities too. The Local entities show only outages whose message contains your Locality (case-insensitive substring match).
+- An empty Locality means every outage in the feed counts as yours.
+- The Locality and the update interval can be changed under **Configure** (Options) at any time. Changes apply immediately, without a restart and without a new request to Tauron. Clearing the Locality really clears it.
 
 ### Finding GAID Values
 
@@ -148,15 +144,15 @@ entities:
   - sensor.tauron_outage_items
 ```
 
-#### Filtered examples (only if filters configured)
+#### Local examples
 
 ```yaml
-# Filtered sensors card
+# Local sensors card
 type: entities
 entities:
-  - sensor.tauron_filtered_outage_count
-  - sensor.tauron_filtered_next_outage
-  - sensor.tauron_filtered_outage_items
+  - sensor.tauron_local_outage_count
+  - sensor.tauron_local_next_outage
+  - sensor.tauron_local_outage_items
 ```
 
 #### Calendar Card

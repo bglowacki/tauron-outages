@@ -1,13 +1,12 @@
 DOMAIN = "tauron_outages"
 
-UPDATE_INTERVAL = 240
+DEFAULT_UPDATE_INTERVAL_HOURS = 4
 
 CONF_CITY_GAID = "city_gaid"
 CONF_STREET_GAID = "street_gaid"
 CONF_HOUSE_NO = "house_no"
 CONF_NAME = "name"
-CONF_FILTER_TYPE = "filter_type"
-CONF_FILTER_MESSAGE = "filter_message"
+CONF_LOCALITY = "locality"
 CONF_UPDATE_INTERVAL_HOURS = "update_interval_hours"
 
 SENSOR_TYPES = {
@@ -31,18 +30,18 @@ SENSOR_TYPES = {
         "icon": "mdi:format-list-bulleted",
         "device_class": None,
     },
-    "filtered_next_outage": {
-        "name": "Filtered Next Outage",
+    "local_next_outage": {
+        "name": "Local Next Outage",
         "icon": "mdi:calendar-clock",
         "device_class": "timestamp",
     },
-    "filtered_outage_count": {
-        "name": "Filtered Outage Count",
+    "local_outage_count": {
+        "name": "Local Outage Count",
         "icon": "mdi:counter",
         "device_class": None,
     },
-    "filtered_outage_items": {
-        "name": "Filtered Outage Items",
+    "local_outage_items": {
+        "name": "Local Outage Items",
         "icon": "mdi:format-list-bulleted",
         "device_class": None,
     },
