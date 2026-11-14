@@ -6,7 +6,19 @@ from conftest import run, utc
 from tauron_outages import calendar, sensor
 from tauron_outages.const import DOMAIN
 
-ENTRY = SimpleNamespace(entry_id="abc", data={"name": "Ogrodnica"})
+ENTRY = SimpleNamespace(
+    entry_id="abc",
+    data={
+        "city_gaid": "118484",
+        "street_gaid": "910691",
+        "house_no": "12",
+        "name": "Ogrodnica",
+        "city_name": "Ogrodnica",
+        "city_label": "Ogrodnica (gm. Środa Śląska, pow. średzki, Dolnośląskie)",
+        "commune": "Środa Śląska",
+        "street_label": "",
+    },
+)
 
 
 async def setup_entities(coordinator):

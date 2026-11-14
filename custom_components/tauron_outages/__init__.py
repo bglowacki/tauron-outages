@@ -13,15 +13,18 @@ from homeassistant.util import dt as dt_util
 
 from .const import (
     CONF_CITY_GAID,
+    CONF_CITY_NAME,
+    CONF_COMMUNE,
     CONF_HOUSE_NO,
     CONF_LOCALITY,
     CONF_STREET_GAID,
+    CONF_STREET_LABEL,
     CONF_UPDATE_INTERVAL_HOURS,
     DEFAULT_UPDATE_INTERVAL_HOURS,
     DOMAIN,
 )
-from .migration import migrate_v1_to_v2
-from .http_transport import aiohttp_transport
+from .address_search import AddressSearch, address_label
+from .http_transport import CITIES_URL, STREETS_URL, aiohttp_transport
 from .outage_feed_source import Address, OutageFeedSource, OutageFeedError
 from .outage_schedule import OutageSchedule
 
@@ -65,6 +68,19 @@ def outage_feed_source_for(hass: HomeAssistant, data: Mapping[str, Any]) -> Outa
     )
 
 
+def address_search_for(hass: HomeAssistant) -> AddressSearch:
+    session = async_get_clientsession(hass)
+    return AddressSearch(
+        aiohttp_transport(session, CITIES_URL), aiohttp_transport(session, STREETS_URL)
+    )
+
+
+def address_label_of(data: Mapping[str, Any]) -> str:
+    return address_label(
+        data[CONF_CITY_NAME], data[CONF_COMMUNE], data[CONF_STREET_LABEL], data[CONF_HOUSE_NO]
+    )
+
+
 def _options_of(entry: ConfigEntry) -> tuple[str, int]:
     locality = entry.options.get(CONF_LOCALITY) or ""
     hours = entry.options.get(CONF_UPDATE_INTERVAL_HOURS) or DEFAULT_UPDATE_INTERVAL_HOURS
@@ -72,15 +88,10 @@ def _options_of(entry: ConfigEntry) -> tuple[str, int]:
 
 
 async def async_migrate_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    if entry.version > 2:
-        return False
-    if entry.version == 1:
-        data, options = migrate_v1_to_v2(entry.data, entry.options)
-        hass.config_entries.async_update_entry(
-            entry, data=data, options=options, version=2
-        )
-        _LOGGER.debug("Migrated entry_id=%s to version 2", entry.entry_id)
-    return True
+    _LOGGER.error(
+        "Entry %s was created by an older version; remove it and add it again", entry.title
+    )
+    return False
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:

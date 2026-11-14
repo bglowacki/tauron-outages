@@ -4,17 +4,15 @@ import json
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-import aiohttp
 import pytest
 from freezegun.api import FrozenDateTimeFactory
 
-from homeassistant import config_entries
 from homeassistant.components.calendar import DOMAIN as CALENDAR_DOMAIN
 from homeassistant.config_entries import ConfigEntryState
 from homeassistant.const import STATE_UNAVAILABLE
 from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResultType
-from homeassistant.helpers import entity_registry as er
+from homeassistant.helpers import device_registry as dr, entity_registry as er
 from homeassistant.setup import async_setup_component
 from pytest_homeassistant_custom_component.common import (
     MockConfigEntry,
@@ -29,8 +27,16 @@ from custom_components.tauron_outages.http_transport import BASE_URL
 FEED = json.loads(
     (Path(__file__).parent / "fixtures" / "feed_ogrodnica_chwalimierz.json").read_text()
 )
-ADDRESS = {"city_gaid": "111", "street_gaid": "222", "house_no": "12A"}
-DATA = {**ADDRESS, "name": "Ogrodnica"}
+DATA = {
+    "city_gaid": "118484",
+    "street_gaid": "910691",
+    "house_no": "12",
+    "name": "Ogrodnica",
+    "city_name": "Ogrodnica",
+    "city_label": "Ogrodnica (gm. Środa Śląska, pow. średzki, Dolnośląskie)",
+    "commune": "Środa Śląska",
+    "street_label": "",
+}
 START = datetime(2026, 11, 14, tzinfo=timezone.utc)
 
 STATUS = "sensor.ogrodnica_outage_status"
@@ -60,9 +66,9 @@ def feed(aioclient_mock: AiohttpClientMocker) -> AiohttpClientMocker:
 def entry_with(locality: str = "Ogrodnica", **options) -> MockConfigEntry:
     return MockConfigEntry(
         domain=DOMAIN,
-        version=2,
+        version=3,
         title="Ogrodnica",
-        unique_id="111_222_12A",
+        unique_id="118484_910691_12",
         data=DATA,
         options={"locality": locality, **options},
     )
@@ -84,52 +90,6 @@ async def travel(hass: HomeAssistant, freezer: FrozenDateTimeFactory, when: date
 def respond_with(aioclient_mock: AiohttpClientMocker, **response) -> None:
     aioclient_mock.clear_requests()
     aioclient_mock.get(BASE_URL, **response)
-
-
-async def start_config_flow(hass: HomeAssistant, **user_input):
-    result = await hass.config_entries.flow.async_init(
-        DOMAIN, context={"source": config_entries.SOURCE_USER}
-    )
-    assert result["type"] is FlowResultType.FORM
-    return await hass.config_entries.flow.async_configure(
-        result["flow_id"], {**DATA, **user_input}
-    )
-
-
-async def test_config_flow_stores_address_in_data_and_locality_in_options(hass, feed):
-    result = await start_config_flow(hass, locality="Ogrodnica")
-    await hass.async_block_till_done()
-
-    assert result["type"] is FlowResultType.CREATE_ENTRY
-    assert result["title"] == "Ogrodnica"
-    entry = result["result"]
-    assert entry.version == 2
-    assert dict(entry.data) == DATA
-    assert dict(entry.options) == {"locality": "Ogrodnica"}
-
-
-@pytest.mark.parametrize(
-    "response", [{"status": 500}, {"exc": aiohttp.ClientError()}, {"text": "<html>"}]
-)
-async def test_config_flow_feed_error_shows_cannot_connect(
-    hass, aioclient_mock, caplog, response
-):
-    aioclient_mock.get(BASE_URL, **response)
-
-    result = await start_config_flow(hass)
-
-    assert result["type"] is FlowResultType.FORM
-    assert result["errors"] == {"base": "cannot_connect"}
-    assert "Unexpected exception" not in caplog.text
-
-
-async def test_config_flow_duplicate_address_aborts(hass, feed):
-    await set_up(hass, entry_with())
-
-    result = await start_config_flow(hass, name="Second")
-
-    assert result["type"] is FlowResultType.ABORT
-    assert result["reason"] == "already_configured"
 
 
 async def test_setup_creates_one_set_of_entities_with_clean_ids(hass, feed):
@@ -206,40 +166,6 @@ async def test_changing_poll_interval_changes_how_often_the_feed_is_fetched(
     await travel(hass, freezer, START + timedelta(hours=1, seconds=1))
 
     assert feed.call_count == fetches + 1
-
-
-async def test_v1_entry_moves_setup_filter_into_locality(hass, feed):
-    entry = MockConfigEntry(
-        domain=DOMAIN,
-        version=1,
-        title="Ogrodnica",
-        unique_id="111_222_12A",
-        data={**DATA, "filter_message": "Ogrodnica", "filter_type": 1},
-        options={},
-    )
-
-    await set_up(hass, entry)
-
-    assert entry.version == 2
-    assert dict(entry.data) == DATA
-    assert dict(entry.options) == {"locality": "Ogrodnica"}
-    assert hass.states.get(COUNT).state == "2"
-
-
-async def test_v1_entry_prefers_filter_from_options(hass, feed):
-    entry = MockConfigEntry(
-        domain=DOMAIN,
-        version=1,
-        title="Ogrodnica",
-        unique_id="111_222_12A",
-        data={**DATA, "filter_message": "Ogrodnica"},
-        options={"filter_message": "Chwalimierz", "filter_type": 1, "update_interval_hours": 6},
-    )
-
-    await set_up(hass, entry)
-
-    assert dict(entry.options) == {"locality": "Chwalimierz", "update_interval_hours": 6}
-    assert hass.states.get(COUNT).state == "4"
 
 
 async def test_status_flips_at_local_outage_start_and_end_without_polling(hass, feed, freezer):
@@ -343,3 +269,62 @@ async def test_feed_error_makes_entities_unavailable_until_next_good_poll(hass, 
     await travel(hass, freezer, START + timedelta(hours=8, seconds=2))
     assert hass.states.get(STATUS).state == "Inactive"
     assert hass.states.get(COUNT).state == "2"
+
+
+async def test_device_shows_the_village_address(hass, feed):
+    entry = await set_up(hass, entry_with())
+
+    (device,) = dr.async_entries_for_config_entry(dr.async_get(hass), entry.entry_id)
+    assert device.name == "Ogrodnica"
+    assert device.model == "Ogrodnica 12, gm. Środa Śląska"
+
+
+async def test_device_shows_the_town_street_address(hass, feed):
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        version=3,
+        title="Dom",
+        unique_id="119431_897490_1",
+        data={
+            "city_gaid": "119431",
+            "street_gaid": "897490",
+            "house_no": "1",
+            "name": "Dom",
+            "city_name": "Wrocław",
+            "city_label": "Wrocław (gm. Wrocław, pow. Wrocław, Dolnośląskie)",
+            "commune": "Wrocław",
+            "street_label": "ul. Legnicka",
+        },
+        options={"locality": ""},
+    )
+    await set_up(hass, entry)
+
+    (device,) = dr.async_entries_for_config_entry(dr.async_get(hass), entry.entry_id)
+    assert device.model == "Wrocław, ul. Legnicka 1"
+    assert hass.states.get("calendar.dom_outages") is not None
+
+
+async def test_options_dialog_says_which_address_it_watches(hass, feed):
+    entry = await set_up(hass, entry_with())
+
+    result = await hass.config_entries.options.async_init(entry.entry_id)
+
+    assert result["description_placeholders"] == {"address": "Ogrodnica 12, gm. Środa Śląska"}
+
+
+@pytest.mark.parametrize("version", [1, 2])
+async def test_entries_from_before_address_search_fail_migration(hass, feed, version):
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        version=version,
+        title="Ogrodnica",
+        unique_id="111_222_12A",
+        data={"city_gaid": "111", "street_gaid": "222", "house_no": "12A", "name": "Ogrodnica"},
+        options={"locality": "Ogrodnica"},
+    )
+    entry.add_to_hass(hass)
+
+    assert not await hass.config_entries.async_setup(entry.entry_id)
+
+    assert entry.state is ConfigEntryState.MIGRATION_ERROR
+    assert hass.states.get(STATUS) is None

@@ -1,39 +1,66 @@
 import logging
-import voluptuous as vol
+from typing import Any
+
+import probatio as vol
 
 from homeassistant import config_entries
-from homeassistant.core import HomeAssistant
-from homeassistant.data_entry_flow import FlowResult
-from homeassistant.exceptions import HomeAssistantError
-import homeassistant.helpers.config_validation as cv
-from typing import Optional, Any, Dict
+from homeassistant.config_entries import ConfigFlowResult
+from homeassistant.helpers.selector import (
+    SelectOptionDict,
+    SelectSelector,
+    SelectSelectorConfig,
+    SelectSelectorMode,
+)
+from homeassistant.helpers.translation import async_get_translations
+from homeassistant.util import dt as dt_util
 
+from . import address_label_of, address_search_for, outage_feed_source_for
+from .address_search import AddressSearchError, CityMatch, SearchRefused, StreetMatch
 from .const import (
     CONF_CITY_GAID,
+    CONF_CITY_LABEL,
+    CONF_CITY_NAME,
+    CONF_COMMUNE,
     CONF_HOUSE_NO,
     CONF_LOCALITY,
     CONF_NAME,
     CONF_STREET_GAID,
+    CONF_STREET_LABEL,
     CONF_UPDATE_INTERVAL_HOURS,
     DEFAULT_UPDATE_INTERVAL_HOURS,
     DOMAIN,
 )
-from homeassistant.util import dt as dt_util
-
-from . import outage_feed_source_for
 from .outage_feed_source import OutageFeedError
 
 _LOGGER = logging.getLogger(__name__)
 
-STEP_USER_DATA_SCHEMA = vol.Schema(
-    {
-        vol.Required(CONF_CITY_GAID): str,
-        vol.Required(CONF_STREET_GAID): str,
-        vol.Required(CONF_HOUSE_NO): str,
-        vol.Required(CONF_NAME): str,
-        vol.Optional(CONF_LOCALITY, default=""): str,
-    }
-)
+CITY = "city"
+STREET = "street"
+NO_STREET_KEY = f"component.{DOMAIN}.selector.street.options.no_street"
+
+
+def _search_schema(key: str, text: str) -> vol.Schema:
+    return vol.Schema({vol.Required(key, description={"suggested_value": text}): str})
+
+
+def _pick_schema(key: str, choices: list[SelectOptionDict]) -> vol.Schema:
+    return vol.Schema(
+        {
+            vol.Required(key): SelectSelector(
+                SelectSelectorConfig(options=choices, mode=SelectSelectorMode.DROPDOWN)
+            )
+        }
+    )
+
+
+def _details_schema(city_name: str) -> vol.Schema:
+    return vol.Schema(
+        {
+            vol.Required(CONF_HOUSE_NO): str,
+            vol.Required(CONF_NAME, description={"suggested_value": city_name}): str,
+            vol.Optional(CONF_LOCALITY, description={"suggested_value": city_name}): str,
+        }
+    )
 
 
 def _options_schema(locality: str, hours: int) -> vol.Schema:
@@ -49,59 +76,147 @@ def _options_schema(locality: str, hours: int) -> vol.Schema:
     )
 
 
-async def validate_input(hass: HomeAssistant, data: Dict[str, Any]) -> Dict[str, Any]:
-    try:
-        await outage_feed_source_for(hass, data).fetch(dt_util.utcnow())
-    except OutageFeedError as err:
-        raise CannotConnect from err
-    except Exception as err:
-        _LOGGER.exception("Unexpected exception")
-        raise CannotConnect from err
-
-    return {
-        "title": data[CONF_NAME],
-        CONF_CITY_GAID: data[CONF_CITY_GAID],
-        CONF_STREET_GAID: data[CONF_STREET_GAID],
-        CONF_HOUSE_NO: data[CONF_HOUSE_NO],
-    }
+def _search_error(err: Exception) -> str:
+    if isinstance(err, SearchRefused):
+        return err.refusal.value
+    return "cannot_connect"
 
 
 class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
-    VERSION = 2
+    VERSION = 3
+
+    def __init__(self) -> None:
+        self._cities: list[CityMatch] = []
+        self._city: CityMatch | None = None
+        self._streets: list[StreetMatch] = []
+        self._street: StreetMatch | None = None
+        self._street_labels: dict[str, str] = {}
 
     async def async_step_user(
-        self, user_input: Optional[Dict[str, Any]] = None
-    ) -> FlowResult:
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        text = ""
         errors: dict[str, str] = {}
-        
         if user_input is not None:
+            text = user_input[CITY]
             try:
-                info = await validate_input(self.hass, user_input)
-            except CannotConnect:
-                errors["base"] = "cannot_connect"
-            except InvalidAuth:
-                errors["base"] = "invalid_auth"
-            except Exception:
-                _LOGGER.exception("Unexpected exception")
-                errors["base"] = "unknown"
+                self._cities = await address_search_for(self.hass).cities(text)
+            except (SearchRefused, AddressSearchError) as err:
+                errors["base"] = _search_error(err)
             else:
-                unique_id = f"{user_input[CONF_CITY_GAID]}_{user_input[CONF_STREET_GAID]}_{user_input[CONF_HOUSE_NO]}"
-                await self.async_set_unique_id(unique_id)
-                self._abort_if_unique_id_configured()
-                
-                data = {k: v for k, v in user_input.items() if k != CONF_LOCALITY}
+                if len(self._cities) == 1:
+                    self._city = self._cities[0]
+                    return await self.async_step_street()
+                return await self.async_step_pick_city()
+
+        return self.async_show_form(
+            step_id="user",
+            data_schema=_search_schema(CITY, text),
+            errors=errors,
+            description_placeholders={"query": text.strip()},
+        )
+
+    async def async_step_pick_city(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        if user_input is not None:
+            self._city = next(c for c in self._cities if c.gaid == user_input[CITY])
+            return await self.async_step_street()
+
+        choices = [SelectOptionDict(value=c.gaid, label=c.label) for c in self._cities]
+        return self.async_show_form(step_id="pick_city", data_schema=_pick_schema(CITY, choices))
+
+    async def async_step_street(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        assert self._city is not None
+        text = self._city.name
+        errors: dict[str, str] = {}
+        if user_input is not None:
+            text = user_input[STREET]
+            try:
+                self._streets = await address_search_for(self.hass).streets(self._city, text)
+            except (SearchRefused, AddressSearchError) as err:
+                errors["base"] = _search_error(err)
+            else:
+                return await self.async_step_pick_street()
+
+        return self.async_show_form(
+            step_id="street",
+            data_schema=_search_schema(STREET, text),
+            errors=errors,
+            description_placeholders={"query": text.strip(), "city": self._city.label},
+        )
+
+    async def async_step_pick_street(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        if user_input is not None:
+            self._street = next(s for s in self._streets if s.gaid == user_input[STREET])
+            return await self.async_step_details()
+
+        no_street = await self._no_street_template()
+        self._street_labels = {
+            s.gaid: no_street.format(city=s.name) if s.unnamed else s.label
+            for s in self._streets
+        }
+        choices = [
+            SelectOptionDict(value=gaid, label=label)
+            for gaid, label in self._street_labels.items()
+        ]
+        return self.async_show_form(
+            step_id="pick_street", data_schema=_pick_schema(STREET, choices)
+        )
+
+    async def async_step_details(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        assert self._city is not None and self._street is not None
+        errors: dict[str, str] = {}
+        if user_input is not None:
+            data = {
+                CONF_CITY_GAID: self._city.gaid,
+                CONF_STREET_GAID: self._street.gaid,
+                CONF_HOUSE_NO: user_input[CONF_HOUSE_NO].strip(),
+                CONF_NAME: user_input[CONF_NAME],
+                CONF_CITY_NAME: self._city.name,
+                CONF_CITY_LABEL: self._city.label,
+                CONF_COMMUNE: self._city.commune,
+                CONF_STREET_LABEL: "" if self._street.unnamed else self._street.label,
+            }
+            await self.async_set_unique_id(
+                f"{data[CONF_CITY_GAID]}_{data[CONF_STREET_GAID]}_{data[CONF_HOUSE_NO]}"
+            )
+            self._abort_if_unique_id_configured()
+            try:
+                await outage_feed_source_for(self.hass, data).fetch(dt_util.utcnow())
+            except OutageFeedError:
+                errors["base"] = "cannot_connect"
+            else:
                 return self.async_create_entry(
-                    title=info["title"],
+                    title=data[CONF_NAME],
                     data=data,
                     options={CONF_LOCALITY: user_input.get(CONF_LOCALITY, "")},
                 )
 
         return self.async_show_form(
-            step_id="user",
-            data_schema=STEP_USER_DATA_SCHEMA,
+            step_id="details",
+            data_schema=self.add_suggested_values_to_schema(
+                _details_schema(self._city.name), user_input or {}
+            ),
             errors=errors,
+            description_placeholders={
+                "city": self._city.label,
+                "street": self._street_labels[self._street.gaid],
+            },
         )
+
+    async def _no_street_template(self) -> str:
+        translations = await async_get_translations(
+            self.hass, self.hass.config.language, "selector", {DOMAIN}
+        )
+        return translations.get(NO_STREET_KEY, "{city} (no street)")
 
     @staticmethod
     def async_get_options_flow(config_entry: config_entries.ConfigEntry):
@@ -112,9 +227,9 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
     def __init__(self, config_entry: config_entries.ConfigEntry) -> None:
         self._entry = config_entry
 
-    async def async_step_init(self, user_input: Optional[Dict[str, Any]] = None) -> FlowResult:
-        errors: dict[str, str] = {}
-
+    async def async_step_init(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
         if user_input is not None:
             user_input.setdefault(CONF_LOCALITY, "")
             return self.async_create_entry(title="Options", data=user_input)
@@ -124,12 +239,8 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
             options.get(CONF_LOCALITY, ""),
             options.get(CONF_UPDATE_INTERVAL_HOURS, DEFAULT_UPDATE_INTERVAL_HOURS),
         )
-        return self.async_show_form(step_id="init", data_schema=schema, errors=errors)
-
-
-class CannotConnect(HomeAssistantError):
-    pass
-
-
-class InvalidAuth(HomeAssistantError):
-    pass
+        return self.async_show_form(
+            step_id="init",
+            data_schema=schema,
+            description_placeholders={"address": address_label_of(self._entry.data)},
+        )

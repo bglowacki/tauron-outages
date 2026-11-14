@@ -3,34 +3,67 @@
     "step": {
       "user": {
         "title": "Tauron Power Outages",
-        "description": "Configure Tauron power outage monitoring for your address",
+        "description": "Find your city, town or village in Tauron's register of addresses.",
         "data": {
-          "city_gaid": "City GAID",
-          "street_gaid": "Street GAID",
-          "house_no": "House Number",
+          "city": "City"
+        },
+        "data_description": {
+          "city": "At least 3 letters of its name, with Polish letters (e.g. \"Wrocław\")."
+        }
+      },
+      "pick_city": {
+        "title": "Choose your city",
+        "description": "Several places match. Each is shown with its commune (gm.), district (pow.) and province.",
+        "data": {
+          "city": "City"
+        }
+      },
+      "street": {
+        "title": "Find your street",
+        "description": "Searching streets in {city}. In a village without named streets, keep its name and press Submit.",
+        "data": {
+          "street": "Street"
+        },
+        "data_description": {
+          "street": "At least 3 letters from any part of the street's name."
+        }
+      },
+      "pick_street": {
+        "title": "Choose your street",
+        "data": {
+          "street": "Street"
+        }
+      },
+      "details": {
+        "title": "House number and name",
+        "description": "{city}, {street}.",
+        "data": {
+          "house_no": "House number",
           "name": "Name",
           "locality": "Locality (optional)"
         },
         "data_description": {
-          "city_gaid": "The city GAID from Tauron's system",
-          "street_gaid": "The street GAID from Tauron's system",
-          "house_no": "Your house number",
-          "name": "Friendly name for this integration",
+          "house_no": "Your house number, as on Tauron's website.",
+          "name": "Names the device and starts its entity IDs (e.g. calendar.<name>_outages).",
           "locality": "Only outages whose message names this place (e.g. \"Ogrodnica\") are shown, case-insensitive. Leave empty to include every outage in the feed."
         }
       }
     },
     "error": {
       "cannot_connect": "Failed to connect to Tauron API",
-      "invalid_auth": "Invalid authentication",
-      "unknown": "Unexpected error occurred"
+      "too_short": "Type at least 3 characters.",
+      "no_matches": "No matches for '{query}'. Use Polish letters, e.g. \"Wrocław\", not \"Wroclaw\".",
+      "too_many": "More than 20 matches for '{query}'. Type more of the name."
+    },
+    "abort": {
+      "already_configured": "This address is already configured."
     }
   },
   "options": {
     "step": {
       "init": {
         "title": "Tauron Power Outages Options",
-        "description": "Change the Locality and update interval without re-adding the integration.",
+        "description": "Watching: {address}\n\nChange the Locality and update interval without re-adding the integration.",
         "data": {
           "locality": "Locality (optional)",
           "update_interval_hours": "Update interval (hours)"
@@ -39,6 +72,13 @@
           "locality": "Only outages whose message names this place (e.g. \"Ogrodnica\") are shown, case-insensitive. Leave empty to include every outage in the feed.",
           "update_interval_hours": "How often to poll the Tauron API. Minimum 1, default 4 hours."
         }
+      }
+    }
+  },
+  "selector": {
+    "street": {
+      "options": {
+        "no_street": "{city} (no street)"
       }
     }
   }
