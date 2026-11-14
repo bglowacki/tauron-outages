@@ -1,6 +1,7 @@
 {
   "domain": "tauron_outages",
   "name": "Tauron Power Outages",
+  "categories": ["local_services"],
   "codeowners": ["@bglowacki"],
   "config_flow": true,
   "documentation": "https://github.com/bglowacki/tauron-outages",
