@@ -13,7 +13,7 @@
       },
       "pick_city": {
         "title": "Choose your city",
-        "description": "Several places match. Each is shown with its commune (gm.), district (pow.) and province.",
+        "description": "Found {count}. Each match shows its commune (gm.), district (pow.) and province. If your place isn't listed (Tauron returns at most 150), choose \"Search again\" at the top and type more of its name.",
         "data": {
           "city": "City"
         }
@@ -30,6 +30,7 @@
       },
       "pick_street": {
         "title": "Choose your street",
+        "description": "Found {count}. If your street isn't listed (Tauron returns at most 150), choose \"Search again\" at the top and type more of its name.",
         "data": {
           "street": "Street"
         }
@@ -53,7 +54,9 @@
       "cannot_connect": "Failed to connect to Tauron API",
       "too_short": "Type at least 3 characters.",
       "no_matches": "No matches for \"{query}\". Use Polish letters, e.g. \"Wrocław\", not \"Wroclaw\".",
-      "too_many": "More than 20 matches for \"{query}\". Type more of the name."
+      "house_number": "\"{query}\" looks like a house number — you'll enter it in the last step. Here, type the street's name; in a village without street names, leave \"{city_name}\" and click Submit.",
+      "unknown_house_number": "Tauron doesn't know house number \"{house_no}\" at this address. Numbers containing \"{house_no}\": {suggestions}.",
+      "house_number_not_found": "Tauron doesn't know house number \"{house_no}\" at this address. Check it on Tauron's website."
     },
     "abort": {
       "already_configured": "This address is already configured."
@@ -79,6 +82,11 @@
     "street": {
       "options": {
         "no_street": "{city} (no street)"
+      }
+    },
+    "pick": {
+      "options": {
+        "search_again": "Search again (change the text)"
       }
     }
   }

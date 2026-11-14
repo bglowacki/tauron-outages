@@ -17,7 +17,13 @@ from .const import (
 )
 from .address import Address
 from .address_search import AddressSearch
-from .http_transport import CITIES_URL, STREETS_URL, aiohttp_transport
+from .http_transport import (
+    CITIES_URL,
+    HOUSE_NUMBERS_URL,
+    ONLY_STREET_URL,
+    STREETS_URL,
+    aiohttp_transport,
+)
 from .outage_feed_source import OutageFeedSource, OutageFeedError
 from .outage_schedule import OutageSchedule
 
@@ -59,7 +65,10 @@ def outage_feed_source_for(hass: HomeAssistant, address: Address) -> OutageFeedS
 def address_search_for(hass: HomeAssistant) -> AddressSearch:
     session = async_get_clientsession(hass)
     return AddressSearch(
-        aiohttp_transport(session, CITIES_URL), aiohttp_transport(session, STREETS_URL)
+        aiohttp_transport(session, CITIES_URL),
+        aiohttp_transport(session, STREETS_URL),
+        aiohttp_transport(session, ONLY_STREET_URL),
+        aiohttp_transport(session, HOUSE_NUMBERS_URL),
     )
 
 

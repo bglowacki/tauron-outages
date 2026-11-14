@@ -13,7 +13,7 @@
       },
       "pick_city": {
         "title": "Wybierz miejscowość",
-        "description": "Pasuje kilka miejscowości. Przy każdej podano gminę (gm.), powiat (pow.) i województwo.",
+        "description": "Znaleziono: {count}. Przy każdej podano gminę (gm.), powiat (pow.) i województwo. Jeśli Twojej miejscowości nie ma na liście (Tauron zwraca najwyżej 150 wyników), wybierz „Szukaj ponownie” na górze i wpisz więcej liter nazwy.",
         "data": {
           "city": "Miejscowość"
         }
@@ -30,6 +30,7 @@
       },
       "pick_street": {
         "title": "Wybierz ulicę",
+        "description": "Znaleziono: {count}. Jeśli Twojej ulicy nie ma na liście (Tauron zwraca najwyżej 150 wyników), wybierz „Szukaj ponownie” na górze i wpisz więcej liter nazwy.",
         "data": {
           "street": "Ulica"
         }
@@ -53,7 +54,9 @@
       "cannot_connect": "Nie udało się połączyć z API Tauron",
       "too_short": "Wpisz co najmniej 3 znaki.",
       "no_matches": "Brak wyników dla „{query}”. Użyj polskich znaków, np. \"Wrocław\", a nie \"Wroclaw\".",
-      "too_many": "Ponad 20 wyników dla „{query}”. Wpisz więcej liter nazwy."
+      "house_number": "„{query}” wygląda na numer domu — wpiszesz go w ostatnim kroku. Tutaj wpisz nazwę ulicy; we wsi bez nazw ulic zostaw „{city_name}” i kliknij Zatwierdź.",
+      "unknown_house_number": "Tauron nie zna numeru „{house_no}” pod tym adresem. Numery zawierające „{house_no}”: {suggestions}.",
+      "house_number_not_found": "Tauron nie zna numeru „{house_no}” pod tym adresem. Sprawdź go na stronie Tauron."
     },
     "abort": {
       "already_configured": "Ten adres jest już skonfigurowany."
@@ -79,6 +82,11 @@
     "street": {
       "options": {
         "no_street": "{city} (bez ulicy)"
+      }
+    },
+    "pick": {
+      "options": {
+        "search_again": "Szukaj ponownie (zmień wpisany tekst)"
       }
     }
   }

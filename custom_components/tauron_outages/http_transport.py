@@ -13,6 +13,8 @@ _LOGGER = logging.getLogger(__name__)
 BASE_URL = "https://www.tauron-dystrybucja.pl/waapi/outages/address"
 CITIES_URL = "https://www.tauron-dystrybucja.pl/waapi/enum/geo/cities"
 STREETS_URL = "https://www.tauron-dystrybucja.pl/waapi/enum/geo/streets"
+ONLY_STREET_URL = "https://www.tauron-dystrybucja.pl/waapi/enum/geo/onlyonestreet"
+HOUSE_NUMBERS_URL = "https://www.tauron-dystrybucja.pl/waapi/enum/geo/housenumbers"
 TIMEOUT = 30
 
 
