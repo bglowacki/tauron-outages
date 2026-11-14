@@ -15,7 +15,7 @@ mise install          # Install Python + uv via mise
 uv sync               # Install dependencies
 ```
 
-No automated test suite exists.
+Tests (pure Python, no HA needed): `uv run pytest`. They cover `outage_schedule.py` only, using `tests/fixtures/`.
 
 This runs inside Home Assistant — copy `custom_components/tauron_outages/` into HA's `custom_components/` directory.
 
@@ -23,11 +23,12 @@ This runs inside Home Assistant — copy `custom_components/tauron_outages/` int
 
 All source lives in `custom_components/tauron_outages/`.
 
-**Data flow:** `config_flow.py` (user setup) → `__init__.py` (coordinator) → `tauron_api.py` (API client) → `sensor.py` / `calendar.py` (entities)
+**Data flow:** `config_flow.py` (user setup) → `__init__.py` (coordinator) → `tauron_api.py` (fetches raw feed) → `outage_schedule.py` (typed Outages) → `sensor.py` / `calendar.py` (entities)
 
 - **Coordinator pattern**: `TauronDataUpdateCoordinator` in `__init__.py` polls every 4 hours (configurable). It owns the `TauronAPI` client and applies filters to raw data.
-- **API client** (`tauron_api.py`): Fetches 7-day outage window from Tauron API. Uses `asyncio.to_thread()` for blocking urllib calls. Handles multiple API response key formats and datetime formats defensively.
-- **Platforms**: `sensor.py` (7 sensors: status, next outage, count, items + filtered variants) and `calendar.py` (2 calendars: all + filtered, sharing a base class).
+- **API client** (`tauron_api.py`): Only fetches the raw 7-day Outage feed. Uses `asyncio.to_thread()` for blocking urllib calls.
+- **Outage schedule** (`outage_schedule.py`): Pure Python, no `homeassistant` imports. Builds immutable `Outage`s from the feed (all key spellings, feed shapes and date formats live here only) and answers time questions for an explicit `now` (`active`, `upcoming`, `next`, `overlapping`, `next_transition`, `local(locality)`). Entities do no parsing and no key fallbacks; they query the schedule at read time.
+- **Platforms**: device info shared via `entity.py`; `sensor.py` (7 sensors: status, next outage, count, items + filtered variants) and `calendar.py` (2 calendars: all + filtered, sharing a base class).
 - **Config flow** (`config_flow.py`): UI-based setup using city/street GAID codes + house number. Options flow for filters and update interval.
 - **Filtering**: Optional type/message-based filtering produces a separate set of "filtered" entities.
 

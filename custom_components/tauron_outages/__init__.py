@@ -1,13 +1,16 @@
 """The Tauron Power Outages integration."""
 import logging
+from dataclasses import dataclass
 from datetime import timedelta
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
+from homeassistant.util import dt as dt_util
 
 from .const import DOMAIN, UPDATE_INTERVAL, CONF_UPDATE_INTERVAL_HOURS
+from .outage_schedule import OutageSchedule
 from .tauron_api import TauronAPI, TauronAPIError
 
 _LOGGER = logging.getLogger(__name__)
@@ -117,51 +120,25 @@ class TauronDataUpdateCoordinator(DataUpdateCoordinator):
             update_interval=timedelta(minutes=update_minutes),
         )
 
-    async def _async_update_data(self):
-        """Update data via library."""
+    async def _async_update_data(self) -> "TauronData":
+        """Fetch the Outage feed and build the schedules entities read from."""
         try:
-            outages = await self.api.async_get_outages()
-            next_outage = self.api.get_next_outage(outages)
-            is_active = self.api.is_outage_active(outages)
-
-            data = {
-                "outages": outages,
-                "next_outage": next_outage,
-                "is_active": is_active,
-                "outage_count": len(outages),
-            }
-
-            # Apply filters if provided in config
-            f_type = (self._filters.get("filter_type") or "").strip()
-            f_msg = (self._filters.get("filter_message") or "").strip()
-            if f_type or f_msg:
-                f_type_cf = f_type.casefold()
-                f_msg_cf = f_msg.casefold()
-
-                def _match(o: dict) -> bool:
-                    ok = True
-                    if f_type:
-                        # compare as string for robustness; normalize whitespace and case
-                        o_type_str = str(o.get("type") or o.get("TypeId") or o.get("typeId") or "").strip()
-                        ok = ok and (o_type_str.casefold() == f_type_cf)
-                    if f_msg:
-                        msg = (
-                            o.get("message")
-                            or o.get("Message")
-                            or o.get("reason")
-                            or o.get("description")
-                            or o.get("Description")
-                            or ""
-                        )
-                        ok = ok and (f_msg_cf in str(msg).casefold())
-                    return ok
-                filtered = [o for o in outages if _match(o)]
-                data.update({
-                    "filtered_outages": filtered,
-                    "filtered_outage_count": len(filtered),
-                    "filtered_next_outage": self.api.get_next_outage(filtered),
-                })
-
-            return data
+            feed = await self.api.async_get_outages()
         except TauronAPIError as err:
             raise UpdateFailed(f"Error communicating with API: {err}") from err
+
+        schedule = OutageSchedule.from_feed(feed, dt_util.get_default_time_zone())
+        # Transitional until the type filter is removed: filtered view is the
+        # Local outages for filter_message, further narrowed by type.
+        filtered = schedule.local(self._filters.get("filter_message")).of_type(
+            self._filters.get("filter_type")
+        )
+        return TauronData(schedule=schedule, filtered=filtered)
+
+
+@dataclass(frozen=True, slots=True)
+class TauronData:
+    """What the coordinator publishes: the whole feed and the filtered view."""
+
+    schedule: OutageSchedule
+    filtered: OutageSchedule
