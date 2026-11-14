@@ -1,5 +1,3 @@
-"""Constants for the Tauron Power Outages integration."""
-
 DOMAIN = "tauron_outages"
 
 UPDATE_INTERVAL = 240

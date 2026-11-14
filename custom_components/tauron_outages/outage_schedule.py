@@ -1,10 +1,3 @@
-"""Outage schedule: typed, immutable Outages built from Tauron's Outage feed.
-
-Pure Python, no Home Assistant imports. Every time-based question takes an
-explicit ``now`` so that answers are always evaluated at the moment they are asked.
-
-All knowledge of Tauron's key spellings, feed shapes and date formats lives here.
-"""
 from __future__ import annotations
 
 import hashlib
@@ -27,7 +20,6 @@ _FEED_ITEM_KEYS = ("OutageItems", "outageItems")
 
 @dataclass(frozen=True, slots=True)
 class Outage:
-    """A single interruption of power supply published by Tauron."""
 
     start: datetime
     end: datetime
@@ -40,12 +32,10 @@ class Outage:
     modified: Any = None
 
     def is_active(self, now: datetime) -> bool:
-        """Whether ``now`` lies within the outage window (inclusive)."""
         return self.start <= now <= self.end
 
     @property
     def uid(self) -> str:
-        """Stable identifier: Tauron's ID, or a digest of start, end and message."""
         if self.outage_id not in (None, ""):
             return str(self.outage_id)
         digest = hashlib.sha256(
@@ -55,7 +45,6 @@ class Outage:
 
 
 class OutageSchedule:
-    """An immutable, start-ordered collection of Outages."""
 
     __slots__ = ("_outages",)
 
@@ -66,11 +55,6 @@ class OutageSchedule:
 
     @classmethod
     def from_feed(cls, feed: Any, local_tz: tzinfo) -> OutageSchedule:
-        """Build a schedule from the raw Outage feed.
-
-        Naive timestamps are interpreted in ``local_tz``; ``Z``/offset timestamps
-        keep their own zone. Items with an unreadable start or end are dropped.
-        """
         if isinstance(feed, Mapping):
             items = _first(feed, _FEED_ITEM_KEYS) or []
         elif isinstance(feed, list):
@@ -104,21 +88,15 @@ class OutageSchedule:
         return next((o for o in self._outages if o.start > now), None)
 
     def overlapping(self, range_start: datetime, range_end: datetime) -> tuple[Outage, ...]:
-        """Outages overlapping the half-open range [range_start, range_end)."""
         return tuple(
             o for o in self._outages if o.end > range_start and o.start < range_end
         )
 
     def next_transition(self, now: datetime) -> datetime | None:
-        """Earliest start or end strictly after ``now``, or None."""
         boundaries = [t for o in self._outages for t in (o.start, o.end) if t > now]
         return min(boundaries, default=None)
 
     def local(self, locality: str | None) -> OutageSchedule:
-        """Local outages: those whose message names ``locality``.
-
-        Matching is a casefolded substring test. An empty Locality returns this schedule.
-        """
         needle = (locality or "").strip().strip(",").strip().casefold()
         if not needle:
             return self
@@ -127,10 +105,6 @@ class OutageSchedule:
         )
 
     def of_type(self, outage_type: str | None) -> OutageSchedule:
-        """Outages whose type equals ``outage_type`` (string compare, casefolded).
-
-        Transitional: kept only until the type filter is removed. Empty means no filter.
-        """
         wanted = str(outage_type or "").strip().casefold()
         if not wanted:
             return self
@@ -142,7 +116,6 @@ class OutageSchedule:
 
 
 def _first(item: Mapping[str, Any], keys: tuple[str, ...]) -> Any:
-    """First value present (not None, not empty string) under any of ``keys``."""
     for key in keys:
         value = item.get(key)
         if value is not None and value != "":
@@ -187,7 +160,6 @@ def _build_outage(item: Mapping[str, Any], local_tz: tzinfo) -> Outage | None:
 
 
 def _first_present(item: Mapping[str, Any], keys: tuple[str, ...]) -> Any:
-    """Like ``_first`` but keeps falsy values such as ``False``."""
     for key in keys:
         if key in item and item[key] is not None:
             return item[key]

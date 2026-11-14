@@ -1,4 +1,3 @@
-"""Tests for the Outage schedule, exercised only through its public interface."""
 from __future__ import annotations
 
 import dataclasses

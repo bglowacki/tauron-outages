@@ -1,4 +1,3 @@
-"""Sensor platform for Tauron Power Outages."""
 from __future__ import annotations
 
 import logging
@@ -26,7 +25,6 @@ async def async_setup_entry(
     config_entry: ConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
-    """Set up the Tauron sensor platform."""
     coordinator = hass.data[DOMAIN][config_entry.entry_id]
     async_add_entities(
         [
@@ -38,7 +36,6 @@ async def async_setup_entry(
 
 
 def _item(outage: Outage) -> dict[str, Any]:
-    """Outage as exposed in the `outages` attribute (keys and raw strings unchanged)."""
     return {
         "outageId": outage.outage_id,
         "startDate": outage.start_raw,
@@ -51,10 +48,6 @@ def _item(outage: Outage) -> dict[str, Any]:
 
 
 class TauronSensor(CoordinatorEntity[TauronDataUpdateCoordinator], SensorEntity):
-    """Representation of a Tauron power outage sensor.
-
-    State is evaluated against the schedule at one instant on every write.
-    """
 
     def __init__(
         self,
@@ -63,7 +56,6 @@ class TauronSensor(CoordinatorEntity[TauronDataUpdateCoordinator], SensorEntity)
         sensor_type: str,
         sensor_config: dict[str, Any],
     ) -> None:
-        """Initialize the sensor."""
         super().__init__(coordinator)
         self._sensor_type = sensor_type
         self._filtered = sensor_type.startswith("filtered_")
@@ -83,13 +75,11 @@ class TauronSensor(CoordinatorEntity[TauronDataUpdateCoordinator], SensorEntity)
         return data.filtered if self._filtered else data.schedule
 
     async def async_added_to_hass(self) -> None:
-        """Compute the initial state before the first write."""
         self._evaluate()
         await super().async_added_to_hass()
 
     @callback
     def _handle_coordinator_update(self) -> None:
-        """Re-evaluate on every poll and every outage start or end."""
         self._evaluate()
         self.async_write_ha_state()
 

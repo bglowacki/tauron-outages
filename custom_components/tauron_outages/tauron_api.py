@@ -1,4 +1,3 @@
-"""Tauron API client for power outages."""
 import logging
 import urllib.parse
 import urllib.request
@@ -17,21 +16,17 @@ TIMEOUT = 30
 
 
 class TauronAPIError(Exception):
-    """Exception for Tauron API errors."""
     pass
 
 
 class TauronAPI:
-    """Client for Tauron power outages API."""
     
     def __init__(self, city_gaid: str, street_gaid: str, house_no: str):
-        """Initialize the API client."""
         self.city_gaid = city_gaid
         self.street_gaid = street_gaid
         self.house_no = house_no
         
     async def async_get_outages(self) -> Any:
-        """Fetch the raw Outage feed (parsed JSON) for the configured address."""
         try:
             now = datetime.now(timezone.utc)
             from_date = now.isoformat(timespec="milliseconds").replace("+00:00", "Z")

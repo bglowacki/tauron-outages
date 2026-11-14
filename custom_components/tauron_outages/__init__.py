@@ -1,4 +1,3 @@
-"""The Tauron Power Outages integration."""
 import logging
 from dataclasses import dataclass
 from datetime import timedelta
@@ -20,7 +19,6 @@ PLATFORMS: list[Platform] = [Platform.SENSOR, Platform.CALENDAR]
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """Set up Tauron Power Outages from a config entry."""
     hass.data.setdefault(DOMAIN, {})
 
     api = TauronAPI(
@@ -91,7 +89,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """Unload a config entry."""
     if unload_ok := await hass.config_entries.async_unload_platforms(entry, PLATFORMS):
         hass.data[DOMAIN].pop(entry.entry_id)
 
@@ -99,10 +96,8 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
 
 class TauronDataUpdateCoordinator(DataUpdateCoordinator):
-    """Class to manage fetching data from the Tauron API."""
 
     def __init__(self, hass: HomeAssistant, api: TauronAPI, *, update_minutes: int, filters: dict = None) -> None:
-        """Initialize."""
         self.api = api
         self._filters = filters or {}
         self._unsub_transition: CALLBACK_TYPE | None = None
@@ -116,7 +111,6 @@ class TauronDataUpdateCoordinator(DataUpdateCoordinator):
 
     @callback
     def async_start_transition_timer(self) -> CALLBACK_TYPE:
-        """Notify listeners at every outage start and end; returns the stop callback."""
         remove_listener = self.async_add_listener(self._arm_transition)
         self._arm_transition()
 
@@ -150,7 +144,6 @@ class TauronDataUpdateCoordinator(DataUpdateCoordinator):
         self.async_update_listeners()
 
     async def _async_update_data(self) -> "TauronData":
-        """Fetch the Outage feed and build the schedules entities read from."""
         try:
             feed = await self.api.async_get_outages()
         except TauronAPIError as err:
@@ -165,7 +158,6 @@ class TauronDataUpdateCoordinator(DataUpdateCoordinator):
 
 @dataclass(frozen=True, slots=True)
 class TauronData:
-    """What the coordinator publishes: the whole feed and the filtered view."""
 
     schedule: OutageSchedule
     filtered: OutageSchedule
