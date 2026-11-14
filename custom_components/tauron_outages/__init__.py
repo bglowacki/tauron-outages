@@ -1,7 +1,5 @@
 import logging
-from collections.abc import Mapping
 from datetime import timedelta
-from typing import Any
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
@@ -12,20 +10,15 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, Upda
 from homeassistant.util import dt as dt_util
 
 from .const import (
-    CONF_CITY_GAID,
-    CONF_CITY_NAME,
-    CONF_COMMUNE,
-    CONF_HOUSE_NO,
     CONF_LOCALITY,
-    CONF_STREET_GAID,
-    CONF_STREET_LABEL,
     CONF_UPDATE_INTERVAL_HOURS,
     DEFAULT_UPDATE_INTERVAL_HOURS,
     DOMAIN,
 )
-from .address_search import AddressSearch, address_label
+from .address import Address
+from .address_search import AddressSearch
 from .http_transport import CITIES_URL, STREETS_URL, aiohttp_transport
-from .outage_feed_source import Address, OutageFeedSource, OutageFeedError
+from .outage_feed_source import OutageFeedSource, OutageFeedError
 from .outage_schedule import OutageSchedule
 
 _LOGGER = logging.getLogger(__name__)
@@ -38,7 +31,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     locality, update_minutes = _options_of(entry)
     coordinator = TauronDataUpdateCoordinator(
-        hass, entry, outage_feed_source_for(hass, entry.data), update_minutes=update_minutes, locality=locality
+        hass, entry, outage_feed_source_for(hass, Address.from_entry_data(entry.data)), update_minutes=update_minutes, locality=locality
     )
     await coordinator.async_config_entry_first_refresh()
 
@@ -57,12 +50,7 @@ async def _async_options_updated(hass: HomeAssistant, entry: ConfigEntry) -> Non
     coordinator.async_apply_options(locality=locality, update_minutes=update_minutes)
 
 
-def outage_feed_source_for(hass: HomeAssistant, data: Mapping[str, Any]) -> OutageFeedSource:
-    address = Address(
-        city_gaid=data[CONF_CITY_GAID],
-        street_gaid=data[CONF_STREET_GAID],
-        house_no=data[CONF_HOUSE_NO],
-    )
+def outage_feed_source_for(hass: HomeAssistant, address: Address) -> OutageFeedSource:
     return OutageFeedSource(
         address, aiohttp_transport(async_get_clientsession(hass)), dt_util.get_default_time_zone()
     )
@@ -72,12 +60,6 @@ def address_search_for(hass: HomeAssistant) -> AddressSearch:
     session = async_get_clientsession(hass)
     return AddressSearch(
         aiohttp_transport(session, CITIES_URL), aiohttp_transport(session, STREETS_URL)
-    )
-
-
-def address_label_of(data: Mapping[str, Any]) -> str:
-    return address_label(
-        data[CONF_CITY_NAME], data[CONF_COMMUNE], data[CONF_STREET_LABEL], data[CONF_HOUSE_NO]
     )
 
 

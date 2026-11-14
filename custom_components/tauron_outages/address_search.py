@@ -72,14 +72,6 @@ class AddressSearch:
         return matches
 
 
-def address_label(
-    city_name: str, commune: str, street_label: str, house_no: str
-) -> str:
-    if street_label:
-        return f"{city_name}, {street_label} {house_no}"
-    return f"{city_name} {house_no}, gm. {commune}"
-
-
 def _query(text: str) -> str:
     query = text.strip()
     if len(query) < MIN_LENGTH:
