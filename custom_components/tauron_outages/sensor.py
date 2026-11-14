@@ -58,8 +58,8 @@ class TauronSensor(CoordinatorEntity[TauronDataUpdateCoordinator], SensorEntity)
     ) -> None:
         super().__init__(coordinator)
         self._sensor_type = sensor_type
-        self._local_only = sensor_type.startswith("filtered_")
-        self._kind = sensor_type.removeprefix("filtered_")
+        self._local_only = sensor_type.startswith("local_")
+        self._kind = sensor_type.removeprefix("local_")
         self._attr_name = f"{config_entry.data.get(CONF_NAME, 'Tauron')} {sensor_config['name']}"
         self._attr_unique_id = f"{config_entry.entry_id}_{sensor_type}"
         self._attr_icon = sensor_config["icon"]

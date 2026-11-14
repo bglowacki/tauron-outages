@@ -83,7 +83,7 @@ async def async_setup_entry(
     async_add_entities(
         [
             TauronOutagesCalendar(coordinator, config_entry),
-            TauronOutagesFilteredCalendar(coordinator, config_entry),
+            TauronOutagesLocalCalendar(coordinator, config_entry),
         ],
         False,
     )
@@ -101,13 +101,13 @@ class TauronOutagesCalendar(_BaseTauronOutagesCalendar):
         )
 
 
-class TauronOutagesFilteredCalendar(_BaseTauronOutagesCalendar):
+class TauronOutagesLocalCalendar(_BaseTauronOutagesCalendar):
 
     def __init__(self, coordinator: TauronDataUpdateCoordinator, config_entry: ConfigEntry) -> None:
         super().__init__(
             coordinator,
             config_entry,
-            name_suffix="Filtered Outages",
-            unique_id_suffix="filtered_calendar",
+            name_suffix="Local Outages",
+            unique_id_suffix="local_calendar",
             local_only=True,
         )

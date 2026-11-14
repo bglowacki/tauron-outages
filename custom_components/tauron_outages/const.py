@@ -30,18 +30,18 @@ SENSOR_TYPES = {
         "icon": "mdi:format-list-bulleted",
         "device_class": None,
     },
-    "filtered_next_outage": {
-        "name": "Filtered Next Outage",
+    "local_next_outage": {
+        "name": "Local Next Outage",
         "icon": "mdi:calendar-clock",
         "device_class": "timestamp",
     },
-    "filtered_outage_count": {
-        "name": "Filtered Outage Count",
+    "local_outage_count": {
+        "name": "Local Outage Count",
         "icon": "mdi:counter",
         "device_class": None,
     },
-    "filtered_outage_items": {
-        "name": "Filtered Outage Items",
+    "local_outage_items": {
+        "name": "Local Outage Items",
         "icon": "mdi:format-list-bulleted",
         "device_class": None,
     },

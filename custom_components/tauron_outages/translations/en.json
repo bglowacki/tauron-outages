@@ -16,7 +16,7 @@
           "street_gaid": "The street GAID from Tauron's system",
           "house_no": "Your house number",
           "name": "Friendly name for this integration",
-          "locality": "Only outages whose message names this place (e.g. \"Ogrodnica\") are shown in the filtered entities, case-insensitive. Leave empty to include every outage in the feed."
+          "locality": "Only outages whose message names this place (e.g. \"Ogrodnica\") are shown in the Local entities, case-insensitive. Leave empty to include every outage in the feed."
         }
       }
     },
@@ -36,7 +36,7 @@
           "update_interval_hours": "Update interval (hours)"
         },
         "data_description": {
-          "locality": "Only outages whose message names this place (e.g. \"Ogrodnica\") are shown in the filtered entities, case-insensitive. Leave empty to include every outage in the feed.",
+          "locality": "Only outages whose message names this place (e.g. \"Ogrodnica\") are shown in the Local entities, case-insensitive. Leave empty to include every outage in the feed.",
           "update_interval_hours": "How often to poll the Tauron API. Minimum 1, default 4 hours."
         }
       }

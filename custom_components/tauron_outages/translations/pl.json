@@ -16,7 +16,7 @@
           "street_gaid": "GAID ulicy z systemu Tauron",
           "house_no": "Twój numer domu",
           "name": "Przyjazna nazwa dla tej integracji",
-          "locality": "W encjach filtrowanych pokazywane są tylko przerwy, których komunikat wymienia tę miejscowość (np. \"Ogrodnica\"), bez rozróżniania wielkości liter. Pozostaw puste, aby uwzględnić wszystkie przerwy."
+          "locality": "W encjach lokalnych (Local) pokazywane są tylko przerwy, których komunikat wymienia tę miejscowość (np. \"Ogrodnica\"), bez rozróżniania wielkości liter. Pozostaw puste, aby uwzględnić wszystkie przerwy."
         }
       }
     },
@@ -36,7 +36,7 @@
           "update_interval_hours": "Interwał aktualizacji (godziny)"
         },
         "data_description": {
-          "locality": "W encjach filtrowanych pokazywane są tylko przerwy, których komunikat wymienia tę miejscowość (np. \"Ogrodnica\"), bez rozróżniania wielkości liter. Pozostaw puste, aby uwzględnić wszystkie przerwy.",
+          "locality": "W encjach lokalnych (Local) pokazywane są tylko przerwy, których komunikat wymienia tę miejscowość (np. \"Ogrodnica\"), bez rozróżniania wielkości liter. Pozostaw puste, aby uwzględnić wszystkie przerwy.",
           "update_interval_hours": "Jak często odpytywać API Tauron. Minimum 1, domyślnie 4 godziny."
         }
       }
