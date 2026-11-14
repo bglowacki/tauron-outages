@@ -9,7 +9,7 @@ A single interruption of power supply published by Tauron, with a start, an end 
 _Avoid_: Event, item, shutdown
 
 **Address**:
-The household's place in Tauron's register of address points: a city, a street (if the city has named streets) and a house number. The integration queries the Outage feed for it. Chosen by searching Tauron's register by name, never typed in as codes.
+The household's place in Tauron's register of address points: a city, a street (if the city has named streets) and a house number. The integration queries the Outage feed for it. Chosen by searching Tauron's register by name, never typed in as codes, and shown by those names. A village without named streets has a single unnamed street carrying the village's name.
 _Avoid_: Location, GAID
 
 **Outage feed**:
