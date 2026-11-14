@@ -104,16 +104,6 @@ class OutageSchedule:
             o for o in self._outages if needle in (o.message or "").casefold()
         )
 
-    def of_type(self, outage_type: str | None) -> OutageSchedule:
-        wanted = str(outage_type or "").strip().casefold()
-        if not wanted:
-            return self
-        return OutageSchedule(
-            o
-            for o in self._outages
-            if str(o.type if o.type is not None else "").strip().casefold() == wanted
-        )
-
 
 def _first(item: Mapping[str, Any], keys: tuple[str, ...]) -> Any:
     for key in keys:

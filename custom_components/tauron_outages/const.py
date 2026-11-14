@@ -1,13 +1,12 @@
 DOMAIN = "tauron_outages"
 
-UPDATE_INTERVAL = 240
+DEFAULT_UPDATE_INTERVAL_HOURS = 4
 
 CONF_CITY_GAID = "city_gaid"
 CONF_STREET_GAID = "street_gaid"
 CONF_HOUSE_NO = "house_no"
 CONF_NAME = "name"
-CONF_FILTER_TYPE = "filter_type"
-CONF_FILTER_MESSAGE = "filter_message"
+CONF_LOCALITY = "locality"
 CONF_UPDATE_INTERVAL_HOURS = "update_interval_hours"
 
 SENSOR_TYPES = {

@@ -9,7 +9,16 @@ from homeassistant.helpers.event import async_track_point_in_utc_time
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from homeassistant.util import dt as dt_util
 
-from .const import DOMAIN, UPDATE_INTERVAL, CONF_UPDATE_INTERVAL_HOURS
+from .const import (
+    CONF_CITY_GAID,
+    CONF_HOUSE_NO,
+    CONF_LOCALITY,
+    CONF_STREET_GAID,
+    CONF_UPDATE_INTERVAL_HOURS,
+    DEFAULT_UPDATE_INTERVAL_HOURS,
+    DOMAIN,
+)
+from .migration import migrate_v1_to_v2
 from .outage_schedule import OutageSchedule
 from .tauron_api import TauronAPI, TauronAPIError
 
@@ -22,65 +31,47 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     hass.data.setdefault(DOMAIN, {})
 
     api = TauronAPI(
-        city_gaid=entry.data["city_gaid"],
-        street_gaid=entry.data["street_gaid"],
-        house_no=entry.data["house_no"],
+        city_gaid=entry.data[CONF_CITY_GAID],
+        street_gaid=entry.data[CONF_STREET_GAID],
+        house_no=entry.data[CONF_HOUSE_NO],
     )
 
-    hours_opt = None
-    try:
-        hours_opt = entry.options.get(CONF_UPDATE_INTERVAL_HOURS) if entry.options else None
-    except Exception:
-        hours_opt = None
-    update_minutes = (int(hours_opt) * 60) if hours_opt else UPDATE_INTERVAL
-
+    locality, update_minutes = _settings(entry)
     coordinator = TauronDataUpdateCoordinator(
-        hass,
-        entry,
-        api,
-        update_minutes=update_minutes,
-        filters={
-            "filter_type": (entry.options.get("filter_type") if entry.options else None) or entry.data.get("filter_type"),
-            "filter_message": (entry.options.get("filter_message") if entry.options else None) or entry.data.get("filter_message"),
-        },
+        hass, entry, api, update_minutes=update_minutes, locality=locality
     )
-    _LOGGER.debug("Starting first refresh for entry_id=%s", entry.entry_id)
     await coordinator.async_config_entry_first_refresh()
-    _LOGGER.debug("First refresh completed for entry_id=%s", entry.entry_id)
 
     hass.data[DOMAIN][entry.entry_id] = coordinator
     entry.async_on_unload(coordinator.async_start_transition_timer())
+    entry.async_on_unload(entry.add_update_listener(_async_options_updated))
 
-    async def _update_listener(hass: HomeAssistant, updated_entry: ConfigEntry) -> None:
-        coord: TauronDataUpdateCoordinator = hass.data[DOMAIN][updated_entry.entry_id]
-        new_filters = {
-            "filter_type": (updated_entry.options.get("filter_type") if updated_entry.options else None) or updated_entry.data.get("filter_type"),
-            "filter_message": (updated_entry.options.get("filter_message") if updated_entry.options else None) or updated_entry.data.get("filter_message"),
-        }
-        if getattr(coord, "_filters", None) != new_filters:
-            _LOGGER.debug("Applying updated filters for entry_id=%s: %s", updated_entry.entry_id, new_filters)
-            coord._filters = new_filters
-            await coord.async_request_refresh()
-        try:
-            hours_opt = updated_entry.options.get(CONF_UPDATE_INTERVAL_HOURS) if updated_entry.options else None
-        except Exception:
-            hours_opt = None
-        new_minutes = (int(hours_opt) * 60) if hours_opt else UPDATE_INTERVAL
-        if getattr(coord, "update_interval", None) is not None:
-            if coord.update_interval != timedelta(minutes=new_minutes):
-                _LOGGER.debug(
-                    "Updating polling interval for entry_id=%s from %s to %s minutes",
-                    updated_entry.entry_id,
-                    int(coord.update_interval.total_seconds() / 60) if coord.update_interval else None,
-                    new_minutes,
-                )
-                coord.update_interval = timedelta(minutes=new_minutes)
-
-    entry.async_on_unload(entry.add_update_listener(_update_listener))
-
-    _LOGGER.debug("Forwarding platforms %s for entry_id=%s", PLATFORMS, entry.entry_id)
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
+    return True
+
+
+async def _async_options_updated(hass: HomeAssistant, entry: ConfigEntry) -> None:
+    locality, update_minutes = _settings(entry)
+    coordinator: TauronDataUpdateCoordinator = hass.data[DOMAIN][entry.entry_id]
+    coordinator.async_apply_options(locality=locality, update_minutes=update_minutes)
+
+
+def _settings(entry: ConfigEntry) -> tuple[str, int]:
+    locality = entry.options.get(CONF_LOCALITY) or ""
+    hours = entry.options.get(CONF_UPDATE_INTERVAL_HOURS) or DEFAULT_UPDATE_INTERVAL_HOURS
+    return locality, int(hours) * 60
+
+
+async def async_migrate_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+    if entry.version > 2:
+        return False
+    if entry.version == 1:
+        data, options = migrate_v1_to_v2(entry.data, entry.options)
+        hass.config_entries.async_update_entry(
+            entry, data=data, options=options, version=2
+        )
+        _LOGGER.debug("Migrated entry_id=%s to version 2", entry.entry_id)
     return True
 
 
@@ -100,10 +91,10 @@ class TauronDataUpdateCoordinator(DataUpdateCoordinator):
         api: TauronAPI,
         *,
         update_minutes: int,
-        filters: dict = None,
+        locality: str | None = None,
     ) -> None:
         self.api = api
-        self._filters = filters or {}
+        self._locality = locality or ""
         self._unsub_transition: CALLBACK_TYPE | None = None
 
         super().__init__(
@@ -113,6 +104,17 @@ class TauronDataUpdateCoordinator(DataUpdateCoordinator):
             name=DOMAIN,
             update_interval=timedelta(minutes=update_minutes),
         )
+
+    @callback
+    def async_apply_options(self, *, locality: str, update_minutes: int) -> None:
+        self._locality = locality
+        self.update_interval = timedelta(minutes=update_minutes)
+        if self.data is None:
+            return
+        self.async_set_updated_data(self._build(self.data.schedule))
+
+    def _build(self, schedule: OutageSchedule) -> "TauronData":
+        return TauronData(schedule=schedule, filtered=schedule.local(self._locality))
 
     @callback
     def async_start_transition_timer(self) -> CALLBACK_TYPE:
@@ -154,11 +156,9 @@ class TauronDataUpdateCoordinator(DataUpdateCoordinator):
         except TauronAPIError as err:
             raise UpdateFailed(f"Error communicating with API: {err}") from err
 
-        schedule = OutageSchedule.from_feed(feed, dt_util.get_default_time_zone())
-        filtered = schedule.local(self._filters.get("filter_message")).of_type(
-            self._filters.get("filter_type")
+        return self._build(
+            OutageSchedule.from_feed(feed, dt_util.get_default_time_zone())
         )
-        return TauronData(schedule=schedule, filtered=filtered)
 
 
 @dataclass(frozen=True, slots=True)

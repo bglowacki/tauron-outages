@@ -8,21 +8,42 @@ from homeassistant.exceptions import HomeAssistantError
 import homeassistant.helpers.config_validation as cv
 from typing import Optional, Any, Dict
 
-from .const import DOMAIN
+from .const import (
+    CONF_CITY_GAID,
+    CONF_HOUSE_NO,
+    CONF_LOCALITY,
+    CONF_NAME,
+    CONF_STREET_GAID,
+    CONF_UPDATE_INTERVAL_HOURS,
+    DEFAULT_UPDATE_INTERVAL_HOURS,
+    DOMAIN,
+)
 from .tauron_api import TauronAPI, TauronAPIError
 
 _LOGGER = logging.getLogger(__name__)
 
 STEP_USER_DATA_SCHEMA = vol.Schema(
     {
-        vol.Required("city_gaid"): str,
-        vol.Required("street_gaid"): str,
-        vol.Required("house_no"): str,
-        vol.Required("name"): str,
-        vol.Optional("filter_type"): str,
-        vol.Optional("filter_message"): str,
+        vol.Required(CONF_CITY_GAID): str,
+        vol.Required(CONF_STREET_GAID): str,
+        vol.Required(CONF_HOUSE_NO): str,
+        vol.Required(CONF_NAME): str,
+        vol.Optional(CONF_LOCALITY, default=""): str,
     }
 )
+
+
+def _options_schema(locality: str, hours: int) -> vol.Schema:
+    return vol.Schema(
+        {
+            vol.Optional(
+                CONF_LOCALITY, description={"suggested_value": locality}
+            ): str,
+            vol.Optional(CONF_UPDATE_INTERVAL_HOURS, default=hours): vol.All(
+                vol.Coerce(int), vol.Range(min=1, max=168)
+            ),
+        }
+    )
 
 
 async def validate_input(hass: HomeAssistant, data: Dict[str, Any]) -> Dict[str, Any]:
@@ -50,7 +71,7 @@ async def validate_input(hass: HomeAssistant, data: Dict[str, Any]) -> Dict[str,
 
 class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
-    VERSION = 1
+    VERSION = 2
 
     async def async_step_user(
         self, user_input: Optional[Dict[str, Any]] = None
@@ -72,7 +93,12 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 await self.async_set_unique_id(unique_id)
                 self._abort_if_unique_id_configured()
                 
-                return self.async_create_entry(title=info["title"], data=user_input)
+                data = {k: v for k, v in user_input.items() if k != CONF_LOCALITY}
+                return self.async_create_entry(
+                    title=info["title"],
+                    data=data,
+                    options={CONF_LOCALITY: user_input.get(CONF_LOCALITY, "").strip()},
+                )
 
         return self.async_show_form(
             step_id="user",
@@ -93,16 +119,13 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         errors: dict[str, str] = {}
 
         if user_input is not None:
+            user_input[CONF_LOCALITY] = user_input.get(CONF_LOCALITY, "").strip()
             return self.async_create_entry(title="Options", data=user_input)
 
-        cur_opts = self._entry.options or {}
-        data = self._entry.data or {}
-        schema = vol.Schema(
-            {
-                vol.Optional("filter_type", default=cur_opts.get("filter_type", data.get("filter_type", ""))): str,
-                vol.Optional("filter_message", default=cur_opts.get("filter_message", data.get("filter_message", ""))): str,
-                vol.Optional("update_interval_hours", default=cur_opts.get("update_interval_hours", 4)): vol.All(vol.Coerce(int), vol.Range(min=1, max=168)),
-            }
+        options = self._entry.options
+        schema = _options_schema(
+            options.get(CONF_LOCALITY, ""),
+            options.get(CONF_UPDATE_INTERVAL_HOURS, DEFAULT_UPDATE_INTERVAL_HOURS),
         )
         return self.async_show_form(step_id="init", data_schema=schema, errors=errors)
 
