@@ -61,6 +61,10 @@ For each configuration entry, the integration creates 4 sensors and 1 calendar. 
    - **Name**: A friendly name for the integration
    - (Optional) **Locality**: The place whose outages are yours, e.g. "Ogrodnica"
 
+### Upgrading from a version with "Local" or "Filtered" entities
+
+Remove the integration and add it again. This creates the single set of entities under clean IDs (e.g. `calendar.<your_name>_outages`); the old `…_local_…` / `…_filtered_…` entities and their history are not carried over. Update automations and dashboards that referenced them.
+
 ### Locality
 
 - Tauron's feed covers a group of neighbouring addresses, so it often lists outages in nearby localities too. The entities show only outages whose message contains your Locality (case-insensitive substring match).

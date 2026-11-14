@@ -57,7 +57,7 @@ class TauronSensor(CoordinatorEntity[TauronDataUpdateCoordinator], SensorEntity)
         sensor_config: dict[str, Any],
     ) -> None:
         super().__init__(coordinator)
-        self._kind = sensor_type
+        self._sensor_type = sensor_type
         self._attr_name = f"{config_entry.data.get(CONF_NAME, 'Tauron')} {sensor_config['name']}"
         self._attr_unique_id = f"{config_entry.entry_id}_{sensor_type}"
         self._attr_icon = sensor_config["icon"]
@@ -84,7 +84,7 @@ class TauronSensor(CoordinatorEntity[TauronDataUpdateCoordinator], SensorEntity)
         value: Any = None
         attributes: dict[str, Any] = {}
 
-        if self._kind == "outage_status":
+        if self._sensor_type == "outage_status":
             is_active = schedule.is_active(now)
             next_outage = schedule.next(now)
             value = "Active" if is_active else "Inactive"
@@ -95,7 +95,7 @@ class TauronSensor(CoordinatorEntity[TauronDataUpdateCoordinator], SensorEntity)
                 attributes["next_outage_end"] = next_outage.end_raw
                 attributes["next_outage_reason"] = next_outage.message or UNKNOWN
 
-        elif self._kind == "next_outage":
+        elif self._sensor_type == "next_outage":
             next_outage = schedule.next(now)
             if next_outage:
                 value = next_outage.start
@@ -103,7 +103,7 @@ class TauronSensor(CoordinatorEntity[TauronDataUpdateCoordinator], SensorEntity)
                 attributes["reason"] = next_outage.message or UNKNOWN
                 attributes["type"] = next_outage.type if next_outage.type is not None else UNKNOWN
 
-        elif self._kind == "outage_count":
+        elif self._sensor_type == "outage_count":
             value = schedule.count
             if schedule.count:
                 active = schedule.active(now)
@@ -111,7 +111,7 @@ class TauronSensor(CoordinatorEntity[TauronDataUpdateCoordinator], SensorEntity)
                 attributes["upcoming_outages"] = len(schedule.upcoming(now))
                 attributes["is_active"] = bool(active)
 
-        elif self._kind == "outage_items":
+        elif self._sensor_type == "outage_items":
             value = schedule.count
             attributes["outages"] = [_item(o) for o in schedule.all()]
             attributes["total_outages"] = schedule.count
