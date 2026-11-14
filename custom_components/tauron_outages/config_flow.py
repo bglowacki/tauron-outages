@@ -38,7 +38,6 @@ async def validate_input(hass: HomeAssistant, data: Dict[str, Any]) -> Dict[str,
     )
 
     try:
-        # Test the connection by making a request
         await api.async_get_outages()
     except TauronAPIError as err:
         raise CannotConnect from err
@@ -46,7 +45,6 @@ async def validate_input(hass: HomeAssistant, data: Dict[str, Any]) -> Dict[str,
         _LOGGER.exception("Unexpected exception")
         raise CannotConnect from err
 
-    # Return info that you want to store in the config entry.
     return {
         "title": data["name"],
         "city_gaid": data["city_gaid"],
@@ -73,11 +71,10 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 errors["base"] = "cannot_connect"
             except InvalidAuth:
                 errors["base"] = "invalid_auth"
-            except Exception:  # pylint: disable=broad-except
+            except Exception:
                 _LOGGER.exception("Unexpected exception")
                 errors["base"] = "unknown"
             else:
-                # Create a unique ID for this configuration
                 unique_id = f"{user_input['city_gaid']}_{user_input['street_gaid']}_{user_input['house_no']}"
                 await self.async_set_unique_id(unique_id)
                 self._abort_if_unique_id_configured()
@@ -103,10 +100,8 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         errors: dict[str, str] = {}
 
         if user_input is not None:
-            # Save options
             return self.async_create_entry(title="Options", data=user_input)
 
-        # Defaults from existing options or initial data
         cur_opts = self._entry.options or {}
         data = self._entry.data or {}
         schema = vol.Schema(
