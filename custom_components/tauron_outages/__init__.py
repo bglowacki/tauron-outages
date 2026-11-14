@@ -91,10 +91,10 @@ class TauronDataUpdateCoordinator(DataUpdateCoordinator):
         api: TauronAPI,
         *,
         update_minutes: int,
-        locality: str | None = None,
+        locality: str = "",
     ) -> None:
         self.api = api
-        self._locality = locality or ""
+        self._locality = locality
         self._unsub_transition: CALLBACK_TYPE | None = None
 
         super().__init__(
@@ -108,12 +108,16 @@ class TauronDataUpdateCoordinator(DataUpdateCoordinator):
     @callback
     def async_apply_options(self, *, locality: str, update_minutes: int) -> None:
         self._locality = locality
-        self.update_interval = timedelta(minutes=update_minutes)
-        if self.data is None:
-            return
-        self.async_set_updated_data(self._build(self.data.schedule))
+        interval = timedelta(minutes=update_minutes)
+        if interval != self.update_interval:
+            self.update_interval = interval
+            if self._listeners:
+                self._schedule_refresh()
+        if self.data is not None:
+            self.data = self._with_local_outages(self.data.schedule)
+            self.async_update_listeners()
 
-    def _build(self, schedule: OutageSchedule) -> "TauronData":
+    def _with_local_outages(self, schedule: OutageSchedule) -> "TauronData":
         return TauronData(schedule=schedule, filtered=schedule.local(self._locality))
 
     @callback
@@ -156,7 +160,7 @@ class TauronDataUpdateCoordinator(DataUpdateCoordinator):
         except TauronAPIError as err:
             raise UpdateFailed(f"Error communicating with API: {err}") from err
 
-        return self._build(
+        return self._with_local_outages(
             OutageSchedule.from_feed(feed, dt_util.get_default_time_zone())
         )
 

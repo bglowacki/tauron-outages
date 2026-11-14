@@ -48,9 +48,9 @@ def _options_schema(locality: str, hours: int) -> vol.Schema:
 
 async def validate_input(hass: HomeAssistant, data: Dict[str, Any]) -> Dict[str, Any]:
     api = TauronAPI(
-        city_gaid=data["city_gaid"],
-        street_gaid=data["street_gaid"],
-        house_no=data["house_no"]
+        city_gaid=data[CONF_CITY_GAID],
+        street_gaid=data[CONF_STREET_GAID],
+        house_no=data[CONF_HOUSE_NO]
     )
 
     try:
@@ -62,10 +62,10 @@ async def validate_input(hass: HomeAssistant, data: Dict[str, Any]) -> Dict[str,
         raise CannotConnect from err
 
     return {
-        "title": data["name"],
-        "city_gaid": data["city_gaid"],
-        "street_gaid": data["street_gaid"],
-        "house_no": data["house_no"],
+        "title": data[CONF_NAME],
+        CONF_CITY_GAID: data[CONF_CITY_GAID],
+        CONF_STREET_GAID: data[CONF_STREET_GAID],
+        CONF_HOUSE_NO: data[CONF_HOUSE_NO],
     }
 
 
@@ -89,7 +89,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 _LOGGER.exception("Unexpected exception")
                 errors["base"] = "unknown"
             else:
-                unique_id = f"{user_input['city_gaid']}_{user_input['street_gaid']}_{user_input['house_no']}"
+                unique_id = f"{user_input[CONF_CITY_GAID]}_{user_input[CONF_STREET_GAID]}_{user_input[CONF_HOUSE_NO]}"
                 await self.async_set_unique_id(unique_id)
                 self._abort_if_unique_id_configured()
                 
@@ -97,7 +97,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 return self.async_create_entry(
                     title=info["title"],
                     data=data,
-                    options={CONF_LOCALITY: user_input.get(CONF_LOCALITY, "").strip()},
+                    options={CONF_LOCALITY: user_input.get(CONF_LOCALITY, "")},
                 )
 
         return self.async_show_form(
@@ -119,7 +119,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         errors: dict[str, str] = {}
 
         if user_input is not None:
-            user_input[CONF_LOCALITY] = user_input.get(CONF_LOCALITY, "").strip()
+            user_input.setdefault(CONF_LOCALITY, "")
             return self.async_create_entry(title="Options", data=user_input)
 
         options = self._entry.options

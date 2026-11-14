@@ -13,6 +13,7 @@ from homeassistant.util import dt as dt_util
 
 import tauron_outages
 from tauron_outages import TauronDataUpdateCoordinator
+from tauron_outages.tauron_api import TauronAPIError
 
 UTC = timezone.utc
 FIXTURE = Path(__file__).parent / "fixtures" / "feed_ogrodnica_chwalimierz.json"
@@ -219,5 +220,22 @@ def test_apply_options_keeps_transition_timer_armed(clock):
         coordinator.async_start_transition_timer()
         coordinator.async_apply_options(locality="", update_minutes=60 * 168)
         assert [t["when"] for t in clock.pending] == [utc(2026, 11, 17, 6)]
+
+    run(scenario, locality="Ogrodnica")
+
+
+def test_apply_options_keeps_failed_poll_unavailable(clock):
+    async def scenario(coordinator, api):
+        async def fail():
+            raise TauronAPIError("down")
+
+        api.async_get_outages = fail
+        await coordinator.async_refresh()
+        assert coordinator.last_update_success is False
+
+        coordinator.async_apply_options(locality="", update_minutes=60 * 168)
+
+        assert coordinator.last_update_success is False
+        assert coordinator.data.filtered.count == 6
 
     run(scenario, locality="Ogrodnica")
