@@ -13,7 +13,7 @@
       },
       "pick_city": {
         "title": "Wybierz miejscowość",
-        "description": "Znaleziono: {count}. Pisz w liście, aby ją zawęzić. Jeśli Twojej miejscowości nie ma (Tauron zwraca najwyżej 150 wyników), wpisz więcej liter nazwy, wybierz „Dodaj element niestandardowy” i zatwierdź, aby wyszukać ponownie. Przy każdej podano gminę (gm.), powiat (pow.) i województwo.",
+        "description": "Znaleziono: {count}. Przy każdej podano gminę (gm.), powiat (pow.) i województwo. Jeśli Twojej miejscowości nie ma na liście (Tauron zwraca najwyżej 150 wyników), wybierz „Szukaj ponownie” na górze i wpisz więcej liter nazwy.",
         "data": {
           "city": "Miejscowość"
         }
@@ -30,7 +30,7 @@
       },
       "pick_street": {
         "title": "Wybierz ulicę",
-        "description": "Znaleziono: {count}. Pisz w liście, aby ją zawęzić. Jeśli Twojej ulicy nie ma (Tauron zwraca najwyżej 150 wyników), wpisz więcej liter nazwy, wybierz „Dodaj element niestandardowy” i zatwierdź, aby wyszukać ponownie.",
+        "description": "Znaleziono: {count}. Jeśli Twojej ulicy nie ma na liście (Tauron zwraca najwyżej 150 wyników), wybierz „Szukaj ponownie” na górze i wpisz więcej liter nazwy.",
         "data": {
           "street": "Ulica"
         }
@@ -82,6 +82,11 @@
     "street": {
       "options": {
         "no_street": "{city} (bez ulicy)"
+      }
+    },
+    "pick": {
+      "options": {
+        "search_again": "Szukaj ponownie (zmień wpisany tekst)"
       }
     }
   }

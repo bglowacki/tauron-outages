@@ -13,7 +13,7 @@
       },
       "pick_city": {
         "title": "Choose your city",
-        "description": "Found {count}. Type in the list to narrow it. If your place isn't there (Tauron returns at most 150), type more of its name, choose \"Add custom item\" and submit to search again. Each match shows its commune (gm.), district (pow.) and province.",
+        "description": "Found {count}. Each match shows its commune (gm.), district (pow.) and province. If your place isn't listed (Tauron returns at most 150), choose \"Search again\" at the top and type more of its name.",
         "data": {
           "city": "City"
         }
@@ -30,7 +30,7 @@
       },
       "pick_street": {
         "title": "Choose your street",
-        "description": "Found {count}. Type in the list to narrow it. If your street isn't there (Tauron returns at most 150), type more of its name, choose \"Add custom item\" and submit to search again.",
+        "description": "Found {count}. If your street isn't listed (Tauron returns at most 150), choose \"Search again\" at the top and type more of its name.",
         "data": {
           "street": "Street"
         }
@@ -82,6 +82,11 @@
     "street": {
       "options": {
         "no_street": "{city} (no street)"
+      }
+    },
+    "pick": {
+      "options": {
+        "search_again": "Search again (change the text)"
       }
     }
   }
