@@ -1,9 +1,10 @@
-import asyncio
 import json
 import logging
 import urllib.parse
-import urllib.request
 from typing import Any
+
+import aiohttp
+from yarl import URL
 
 from .outage_feed_source import Transport
 
@@ -13,16 +14,22 @@ BASE_URL = "https://www.tauron-dystrybucja.pl/waapi/outages/address"
 TIMEOUT = 30
 
 
-def urllib_transport(base_url: str = BASE_URL, timeout: float = TIMEOUT) -> Transport:
+def aiohttp_transport(
+    session: aiohttp.ClientSession, base_url: str = BASE_URL, timeout: float = TIMEOUT
+) -> Transport:
 
     async def fetch(params: dict[str, str]) -> Any:
         url = f"{base_url}?{urllib.parse.urlencode(params)}"
         _LOGGER.debug("Requesting URL: %s", url)
-
-        def _fetch() -> Any:
-            with urllib.request.urlopen(urllib.request.Request(url), timeout=timeout) as resp:
-                return json.loads(resp.read().decode("utf-8"))
-
-        return await asyncio.to_thread(_fetch)
+        try:
+            async with session.get(
+                URL(url, encoded=True), timeout=aiohttp.ClientTimeout(total=timeout)
+            ) as resp:
+                if resp.status >= 400:
+                    raise OSError(f"HTTP {resp.status} from {base_url}")
+                body = await resp.read()
+        except aiohttp.ClientError as err:
+            raise OSError(f"{err!r}") from err
+        return json.loads(body.decode("utf-8"))
 
     return fetch

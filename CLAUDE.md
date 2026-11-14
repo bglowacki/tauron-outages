@@ -15,7 +15,7 @@ mise install          # Install Python + uv via mise
 uv sync               # Install dependencies
 ```
 
-Tests: `uv run pytest`. They cover `outage_schedule.py` and `outage_feed_source.py` (pure Python), the urllib transport (against a local HTTP server), and the coordinator's transition timer (real HA core, fake API and clock), using `tests/fixtures/`.
+Tests: `uv run pytest`. They cover `outage_schedule.py` and `outage_feed_source.py` (pure Python), the aiohttp transport (against a local HTTP server), and the coordinator's transition timer (real HA core, fake API and clock), using `tests/fixtures/`.
 
 This runs inside Home Assistant — copy `custom_components/tauron_outages/` into HA's `custom_components/` directory.
 
@@ -26,8 +26,8 @@ All source lives in `custom_components/tauron_outages/`.
 **Data flow:** `config_flow.py` (user setup) → `__init__.py` (coordinator) → `outage_feed_source.py` (requests the Outage feed through a transport) → `outage_schedule.py` (typed Outages) → `sensor.py` / `calendar.py` (entities)
 
 - **Coordinator pattern**: `TauronDataUpdateCoordinator` in `__init__.py` polls every 4 hours (configurable). It owns the `OutageFeedSource` and narrows its schedule to the Locality.
-- **Outage feed source** (`outage_feed_source.py`): Pure Python. `OutageFeedSource` requests the Outage feed. Built with an `Address`, a transport and the local time zone; `fetch(now)` builds the 7-day request, calls the transport and returns an `OutageSchedule`. `fetch` turns any transport failure (`OSError`, `ValueError`, incl. timeouts, HTTP errors and invalid JSON) into an `OutageFeedError`. `outage_feed_source_for(entry data)` in `__init__.py` builds the production source for both the coordinator and the config flow's connection check.
-- **Transport**: an async callable taking the request params and returning decoded JSON; it may raise freely. Production uses `http_transport.urllib_transport()` (blocking urllib in `asyncio.to_thread()`); tests use `FixtureTransport` from `tests/conftest.py`.
+- **Outage feed source** (`outage_feed_source.py`): Pure Python. `OutageFeedSource` requests the Outage feed. Built with an `Address`, a transport and the local time zone; `fetch(now)` builds the 7-day request, calls the transport and returns an `OutageSchedule`. `fetch` turns any transport failure (`OSError`, `ValueError`, incl. timeouts, HTTP errors and invalid JSON) into an `OutageFeedError`. `outage_feed_source_for(hass, entry data)` in `__init__.py` builds the production source for both the coordinator and the config flow's connection check.
+- **Transport**: an async callable taking the request params and returning decoded JSON; it may raise freely. Production uses `http_transport.aiohttp_transport()` with HA's shared client session (`async_get_clientsession`); it reports HTTP ≥ 400 and aiohttp client errors as `OSError`; tests use `FixtureTransport` from `tests/conftest.py`.
 - **Outage schedule** (`outage_schedule.py`): Pure Python, no `homeassistant` imports. Builds immutable `Outage`s from the feed (all key spellings, feed shapes and date formats live here only) and answers time questions for an explicit `now` (`active`, `upcoming`, `next`, `overlapping`, `next_transition`, `local(locality)`). Entities do no parsing and no key fallbacks; they query the schedule at read time.
 - **Platforms**: device info shared via `entity.py`; `sensor.py` (4 sensors: status, next outage, count, items) and `calendar.py` (1 calendar), all showing Local outages only (ADR-0001).
 - **Config flow** (`config_flow.py`): UI-based setup using city/street GAID codes + house number + Locality. Address and name live in entry data; the Locality lives only in entry options. Options flow edits Locality and update interval and the update listener calls `TauronDataUpdateCoordinator.async_apply_options` only. Config entry migrations are pure functions in `migration.py`.
