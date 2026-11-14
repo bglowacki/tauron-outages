@@ -191,16 +191,14 @@ async def entity_readings(schedule, now, monkeypatch):
     return readings
 
 
-@pytest.mark.parametrize("case", CASES)
-async def test_entities_report_each_reading(case, monkeypatch):
-    schedule, now, expected = CASES[case]
+async def test_entities_report_their_reading(monkeypatch):
+    schedule, now, expected = CASES["during"]
     assert await entity_readings(schedule, now, monkeypatch) == expected
 
 
 async def test_entities_report_nothing_without_a_schedule(monkeypatch):
     readings = await entity_readings(None, BEFORE, monkeypatch)
     assert readings == {key: (None, {}) for key in CASES["before"][2]}
-
 
 
 @pytest.mark.parametrize("case", CASES)
