@@ -38,7 +38,7 @@ All source lives in `custom_components/tauron_outages/`.
 
 ## Key Conventions
 
-- Python 3.13+, async/await throughout
+- Python 3.14+ (HA 2026.11+), async/await throughout
 - Translations in `translations/` (en + pl)
 - Integration metadata in `manifest.json` (domain: `tauron_outages`, iot_class: `cloud_polling`)
 - No YAML configuration — config flow only

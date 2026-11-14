@@ -79,12 +79,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     entry.async_on_unload(entry.add_update_listener(_update_listener))
 
     _LOGGER.debug("Forwarding platforms %s for entry_id=%s", PLATFORMS, entry.entry_id)
-    try:
-        await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
-    except AttributeError:
-        for platform in PLATFORMS:
-            _LOGGER.debug("Forwarding platform %s for entry_id=%s", platform, entry.entry_id)
-            await hass.config_entries.async_forward_entry_setup(entry, platform)
+    await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
     return True
 
