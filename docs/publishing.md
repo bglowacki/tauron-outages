@@ -12,14 +12,14 @@ The integration is installed through the Home Assistant Marketplace (HA 2026.11+
 ## Releasing
 
 1. Bump `version` in `manifest.json` and merge to `main`.
-2. Create a GitHub release with tag `vX.Y.Z` matching that version (e.g. `v1.3.3`) and notes saying what changed for households.
+2. Create a GitHub release with tag `vX.Y.Z` matching that version (e.g. `v1.4.0`) and notes saying what changed for households.
 
 ## Owner-only steps
 
 In this order:
 
 1. Repository settings: set the description (e.g. "Home Assistant integration for Tauron Dystrybucja power outages") and topics (`home-assistant`, `hacs`, `homeassistant-integration`, `tauron`, `power-outage`); keep Issues enabled.
-2. Publish the first release, `v1.3.3`.
+2. Publish the first release, `v1.4.0`.
 3. Run the Validate workflow on `main` (Actions → Validate → Run workflow) and confirm both jobs are green.
 4. Open a PR to `hacs/default` adding `bglowacki/tauron-outages` to the `integration` list, following that repository's PR template.
 5. Once it's merged, drop the "Custom repository" section from the README.
