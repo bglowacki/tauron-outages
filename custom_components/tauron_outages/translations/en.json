@@ -44,7 +44,7 @@
         },
         "data_description": {
           "house_no": "Your house number, as on Tauron's website.",
-          "name": "Names the device and starts its entity IDs (e.g. calendar.<name>_outages).",
+          "name": "Names the device and starts its entity IDs (e.g. calendar.ogrodnica_outages).",
           "locality": "Only outages whose message names this place (e.g. \"Ogrodnica\") are shown, case-insensitive. Leave empty to include every outage in the feed."
         }
       }
@@ -52,8 +52,8 @@
     "error": {
       "cannot_connect": "Failed to connect to Tauron API",
       "too_short": "Type at least 3 characters.",
-      "no_matches": "No matches for '{query}'. Use Polish letters, e.g. \"Wrocław\", not \"Wroclaw\".",
-      "too_many": "More than 20 matches for '{query}'. Type more of the name."
+      "no_matches": "No matches for \"{query}\". Use Polish letters, e.g. \"Wrocław\", not \"Wroclaw\".",
+      "too_many": "More than 20 matches for \"{query}\". Type more of the name."
     },
     "abort": {
       "already_configured": "This address is already configured."
