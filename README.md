@@ -1,5 +1,8 @@
 # Tauron Power Outages - Home Assistant Integration
 
+[![Validate](https://github.com/bglowacki/tauron-outages/actions/workflows/validate.yml/badge.svg)](https://github.com/bglowacki/tauron-outages/actions/workflows/validate.yml)
+[![Release](https://img.shields.io/github/v/release/bglowacki/tauron-outages)](https://github.com/bglowacki/tauron-outages/releases)
+
 A custom Home Assistant integration that monitors power outages from Tauron Dystrybucja (Polish power distribution company).
 
 ## Features
@@ -38,11 +41,23 @@ For each configuration entry, the integration creates 4 sensors and 1 calendar. 
 
 ## Installation
 
-### HACS (Recommended)
+Requires Home Assistant 2026.11 or newer.
 
-1. Add this repository to HACS as a custom repository
-2. Install "Tauron Power Outages" through HACS
+### Marketplace (HA 2026.11+)
+
+1. Go to **Settings** → **Marketplace**
+2. Search for "Tauron Power Outages" and install it
 3. Restart Home Assistant
+
+The Marketplace tells you when a new version is out, shows its release notes and lets you install an earlier version.
+
+### HACS (HA ≤ 2026.10)
+
+HACS is built into Home Assistant as the Marketplace since 2026.11. On older versions with HACS installed, search for "Tauron Power Outages" in HACS, install it and restart Home Assistant. The integration itself needs 2026.11, so upgrade Home Assistant first.
+
+### Custom repository
+
+Until the integration is listed in the default catalog, add it by URL: in the Marketplace (or HACS), open the menu → **Custom repositories**, add `https://github.com/bglowacki/tauron-outages` with type **Integration**, then install "Tauron Power Outages" and restart Home Assistant.
 
 ### Manual Installation
 

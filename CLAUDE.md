@@ -21,6 +21,8 @@ Tests: `uv run pytest`. They cover `outage_schedule.py` and `outage_feed_source.
 
 This runs inside Home Assistant — copy `custom_components/tauron_outages/` into HA's `custom_components/` directory.
 
+Distribution: Home Assistant Marketplace / HACS (`hacs.json`, brand images in `custom_components/tauron_outages/brand/`, releases tagged `vX.Y.Z` = manifest `version`). CI (`.github/workflows/validate.yml`) runs hassfest and hacs/action; hassfest rejects manifest keys it doesn't know. See `docs/publishing.md`.
+
 ## Architecture
 
 All source lives in `custom_components/tauron_outages/`.
